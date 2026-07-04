@@ -10,7 +10,8 @@ import { GOAL_TYPE_LABELS } from './goal-type-labels';
 @Injectable()
 export class SavedPlansService {
   constructor(
-    @InjectRepository(SavedPlan) private readonly savedPlanRepository: Repository<SavedPlan>,
+    @InjectRepository(SavedPlan)
+    private readonly savedPlanRepository: Repository<SavedPlan>,
     private readonly planningService: PlanningService,
   ) {}
 
@@ -42,15 +43,22 @@ export class SavedPlansService {
   }
 
   async findOneForUser(userId: string, id: string) {
-    const savedPlan = await this.savedPlanRepository.findOne({ where: { id, userId } });
+    const savedPlan = await this.savedPlanRepository.findOne({
+      where: { id, userId },
+    });
     if (!savedPlan) {
       throw new NotFoundException('저장된 플랜을 찾을 수 없어요.');
     }
     return { ...this.toSummary(savedPlan), steps: savedPlan.steps };
   }
 
-  async findStepLabel(userId: string, planStepId: string): Promise<string | null> {
-    const savedPlans = await this.savedPlanRepository.find({ where: { userId } });
+  async findStepLabel(
+    userId: string,
+    planStepId: string,
+  ): Promise<string | null> {
+    const savedPlans = await this.savedPlanRepository.find({
+      where: { userId },
+    });
     for (const plan of savedPlans) {
       const step = plan.steps.find((s) => s.id === planStepId);
       if (step) {

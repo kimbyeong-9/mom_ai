@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
-import { CurrentUser, CurrentUserPayload } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  CurrentUserPayload,
+} from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AutomationsService } from './automations.service';
 import { CreateAutomationDto } from './dto/create-automation.dto';
@@ -11,7 +14,10 @@ export class AutomationsController {
   constructor(private readonly automationsService: AutomationsService) {}
 
   @Post()
-  connect(@CurrentUser() user: CurrentUserPayload, @Body() dto: CreateAutomationDto) {
+  connect(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateAutomationDto,
+  ) {
     return this.automationsService.connect(user.id, dto);
   }
 

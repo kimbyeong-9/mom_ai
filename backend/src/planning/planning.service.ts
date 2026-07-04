@@ -9,13 +9,18 @@ import { generatePlanningSteps } from './planning-generator';
 @Injectable()
 export class PlanningService {
   constructor(
-    @InjectRepository(Planning) private readonly planningRepository: Repository<Planning>,
+    @InjectRepository(Planning)
+    private readonly planningRepository: Repository<Planning>,
   ) {}
 
   async create(dto: CreatePlanningDto): Promise<{ id: string }> {
     const steps = generatePlanningSteps(dto.goalType);
     const planning = await this.planningRepository.save(
-      this.planningRepository.create({ goalType: dto.goalType, goalText: dto.goalText, steps }),
+      this.planningRepository.create({
+        goalType: dto.goalType,
+        goalText: dto.goalText,
+        steps,
+      }),
     );
     return { id: planning.id };
   }

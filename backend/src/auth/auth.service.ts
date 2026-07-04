@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -21,23 +25,33 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthResult> {
-    const existing = await this.userRepository.findOne({ where: { email: dto.email } });
+    const existing = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
     if (existing) {
       throw new ConflictException('이미 가입된 이메일이에요.');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.userRepository.save(
-      this.userRepository.create({ email: dto.email, passwordHash, name: dto.name }),
+      this.userRepository.create({
+        email: dto.email,
+        passwordHash,
+        name: dto.name,
+      }),
     );
 
     return this.buildAuthResult(user);
   }
 
   async login(dto: LoginDto): Promise<AuthResult> {
-    const user = await this.userRepository.findOne({ where: { email: dto.email } });
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않아요.');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않아요.',
+      );
     }
 
     return this.buildAuthResult(user);
@@ -48,7 +62,10 @@ export class AuthService {
   }
 
   private buildAuthResult(user: User): AuthResult {
-    const accessToken = this.jwtService.sign({ sub: user.id, email: user.email });
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+    });
     return {
       accessToken,
       user: { id: user.id, email: user.email, name: user.name },

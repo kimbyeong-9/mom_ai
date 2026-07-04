@@ -9,12 +9,15 @@ import { Automation } from './entities/automation.entity';
 @Injectable()
 export class AutomationsService {
   constructor(
-    @InjectRepository(Automation) private readonly automationRepository: Repository<Automation>,
+    @InjectRepository(Automation)
+    private readonly automationRepository: Repository<Automation>,
     private readonly savedPlansService: SavedPlansService,
   ) {}
 
   async connect(userId: string, dto: CreateAutomationDto): Promise<Automation> {
-    const label = (await this.savedPlansService.findStepLabel(userId, dto.planStepId)) ?? dto.planStepId;
+    const label =
+      (await this.savedPlansService.findStepLabel(userId, dto.planStepId)) ??
+      dto.planStepId;
 
     return this.automationRepository.save(
       this.automationRepository.create({
@@ -28,11 +31,16 @@ export class AutomationsService {
   }
 
   findAllForUser(userId: string): Promise<Automation[]> {
-    return this.automationRepository.find({ where: { userId }, order: { createdAt: 'DESC' } });
+    return this.automationRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async execute(userId: string, id: string): Promise<Automation> {
-    const automation = await this.automationRepository.findOne({ where: { id, userId } });
+    const automation = await this.automationRepository.findOne({
+      where: { id, userId },
+    });
     if (!automation) {
       throw new NotFoundException('자동화를 찾을 수 없어요.');
     }
