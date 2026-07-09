@@ -1,3 +1,5 @@
+import AuthForm from "@/features/auth/components/AuthForm";
+import { useAuthForm } from "@/features/auth/hooks/useAuthForm";
 import { GoogleIcon, KakaoIcon } from "@/features/auth/components/SocialIcons";
 import SocialLoginButton from "@/features/auth/components/SocialLoginButton";
 import { useToastStore } from "@/store/toast.store";
@@ -9,6 +11,7 @@ const SOCIAL_LOGIN_OPTIONS = [
 
 export default function LoginPage() {
   const showToast = useToastStore((state) => state.show);
+  const { mode, toggleMode, register, onSubmit, isSubmitting } = useAuthForm();
 
   const handleSocialLogin = () => {
     showToast("소셜 로그인은 준비 중이에요.");
@@ -46,7 +49,29 @@ export default function LoginPage() {
           <p className="text-sm text-neutral-500">청년지원금부터 해외살이, 이직까지</p>
         </div>
 
-        <div className="mt-4 flex w-full flex-col gap-3">
+        <div className="mt-4 w-full">
+          <AuthForm
+            mode={mode}
+            register={register}
+            onSubmit={onSubmit}
+            isSubmitting={isSubmitting}
+          />
+          <button
+            type="button"
+            onClick={toggleMode}
+            className="mt-3 text-[13px] font-medium text-[#1F3D2E]/60 hover:text-[#1F3D2E]"
+          >
+            {mode === "login" ? "계정이 없으신가요? 회원가입" : "이미 계정이 있으신가요? 로그인"}
+          </button>
+        </div>
+
+        <div className="flex w-full items-center gap-3 text-[12px] text-neutral-400">
+          <div className="h-px flex-1 bg-neutral-200" />
+          또는
+          <div className="h-px flex-1 bg-neutral-200" />
+        </div>
+
+        <div className="flex w-full flex-col gap-3">
           {SOCIAL_LOGIN_OPTIONS.map((option) => (
             <SocialLoginButton
               key={option.id}
