@@ -4,19 +4,31 @@ import { Repository } from 'typeorm';
 
 import { CreatePlanningDto } from './dto/create-planning.dto';
 import { Planning } from './entities/planning.entity';
-import { generatePlanningSteps } from './planning-generator';
+import {
+  generatePlanningSteps,
+  generatePlanningTitle,
+} from './planning-generator';
+import { PlanningAiService } from './planning-ai.service';
 
 @Injectable()
 export class PlanningService {
   constructor(
     @InjectRepository(Planning)
     private readonly planningRepository: Repository<Planning>,
+    private readonly planningAiService: PlanningAiService,
   ) {}
 
   async create(dto: CreatePlanningDto): Promise<{ id: string }> {
-    const steps = generatePlanningSteps(dto.goalType);
+    const aiPlan = await this.planningAiService.generatePlan(
+      dto.goalType,
+      dto.goalText,
+    );
+    const title = aiPlan?.title ?? generatePlanningTitle(dto.goalType);
+    const steps = aiPlan?.steps ?? generatePlanningSteps(dto.goalType);
+
     const planning = await this.planningRepository.save(
       this.planningRepository.create({
+        title,
         goalType: dto.goalType,
         goalText: dto.goalText,
         steps,

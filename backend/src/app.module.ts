@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
@@ -10,6 +11,7 @@ import { SavedPlansModule } from './saved-plans/saved-plans.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: process.env.DB_PATH ?? './data/lifeflow.sqlite',
