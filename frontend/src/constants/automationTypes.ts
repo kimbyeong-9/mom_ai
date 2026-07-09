@@ -1,11 +1,15 @@
 export const AUTOMATION_TYPES = [
-  { id: "notification", label: "알림" },
-  { id: "document", label: "문서 정리" },
-  { id: "checklist", label: "체크리스트" },
+  { id: "notification", label: "알림", icon: "알" },
+  { id: "document", label: "문서 정리", icon: "문" },
+  { id: "checklist", label: "체크리스트", icon: "체" },
 ] as const;
 
 export type AutomationTypeId = (typeof AUTOMATION_TYPES)[number]["id"];
 
 export function getAutomationTypeLabel(id: AutomationTypeId): string {
   return AUTOMATION_TYPES.find((type) => type.id === id)?.label ?? id;
+}
+
+export function getAutomationType(id: AutomationTypeId) {
+  return AUTOMATION_TYPES.find((type) => type.id === id) ?? AUTOMATION_TYPES[0];
 }

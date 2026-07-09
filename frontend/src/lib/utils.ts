@@ -4,3 +4,7 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export function formatDate(isoDate: string, separator: "-" | "." = "-") {
+  return isoDate.slice(0, 10).replaceAll("-", separator)
+}

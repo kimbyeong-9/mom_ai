@@ -8,7 +8,7 @@ import { useSubmitGoal } from "./useSubmitGoal";
 const PLANNING_ID_STORAGE_KEY = "lastPlanningId";
 
 export function useGoalInputForm() {
-  const { register, handleSubmit, watch, setValue } = useForm<GoalInput>({
+  const { register, handleSubmit, watch, setValue, reset } = useForm<GoalInput>({
     defaultValues: { goalType: DEFAULT_GOAL_TYPE, goalText: "" },
   });
   const submitGoal = useSubmitGoal();
@@ -28,9 +28,16 @@ export function useGoalInputForm() {
     submitGoal.mutate(input);
   });
 
+  const onRegenerate = () => {
+    setPlanningId(null);
+    sessionStorage.removeItem(PLANNING_ID_STORAGE_KEY);
+    reset({ goalType: DEFAULT_GOAL_TYPE, goalText: "" });
+  };
+
   return {
     register,
     onSubmit,
+    onRegenerate,
     goalType: watch("goalType"),
     setGoalType: (goalType: GoalTypeId) => setValue("goalType", goalType),
     isSubmitting: submitGoal.isPending,

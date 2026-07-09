@@ -1,0 +1,38 @@
+export const NAV_ITEMS = [
+  {
+    id: "planning",
+    label: "Planning",
+    mobileLabel: "Planning",
+    path: "/planning",
+    icon: "P",
+    iconBg: "#1F3D2E",
+    iconColor: "#FFFFFF",
+  },
+  {
+    id: "saved",
+    label: "Saved",
+    mobileLabel: "Saved",
+    path: "/saved",
+    icon: "S",
+    iconBg: "#B7CBAE",
+    iconColor: "#1F3D2E",
+  },
+  {
+    id: "automation",
+    label: "Automation",
+    mobileLabel: "Automation",
+    path: "/automation",
+    icon: "A",
+    iconBg: "#F0D6C4",
+    iconColor: "#8A5A3A",
+  },
+  {
+    id: "mypage",
+    label: "마이페이지",
+    mobileLabel: "My",
+    path: "/mypage",
+    icon: "M",
+    iconBg: "#E3DDC8",
+    iconColor: "#1F3D2E",
+  },
+] as const;

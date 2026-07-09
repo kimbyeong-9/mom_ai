@@ -1,15 +1,27 @@
+import QueryErrorState from "@/components/QueryErrorState";
 import SavedPlanList from "@/features/save/components/SavedPlanList";
 import { useSavedPlans } from "@/features/save/hooks/useSavedPlans";
+import { usePageTitle } from "@/layouts/usePageTitle";
 
 export default function SavedPage() {
-  const { data: savedPlans, isLoading } = useSavedPlans();
+  usePageTitle("내 플랜");
+  const { data: savedPlans, isLoading, isError, refetch } = useSavedPlans();
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12">
-      <h1 className="text-2xl font-bold">저장된 플랜</h1>
-      {isLoading && <p className="text-sm text-muted-foreground">불러오는 중...</p>}
+    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
+      <div className="hidden sm:block">
+        <h1 className="text-2xl font-extrabold text-[#1F3D2E]">내 플랜</h1>
+        <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">
+          저장한 플랜을 이어가거나 다시 살펴보세요.
+        </p>
+      </div>
+
+      {isLoading && <p className="text-[13px] text-[#1F3D2E]/50">불러오는 중...</p>}
+      {isError && (
+        <QueryErrorState message="플랜을 불러오지 못했어요." onRetry={() => refetch()} />
+      )}
       {savedPlans?.length === 0 && (
-        <p className="text-sm text-muted-foreground">아직 저장된 플랜이 없어요.</p>
+        <p className="text-[13px] text-[#1F3D2E]/50">아직 저장된 플랜이 없어요.</p>
       )}
       {savedPlans && savedPlans.length > 0 && <SavedPlanList plans={savedPlans} />}
     </div>

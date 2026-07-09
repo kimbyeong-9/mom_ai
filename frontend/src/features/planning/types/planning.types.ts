@@ -16,6 +16,7 @@ export type PlanningStep = {
 
 export type PlanningResult = {
   id: string;
+  title: string;
   goalType: GoalTypeId;
   goalText: string;
   steps: PlanningStep[];
