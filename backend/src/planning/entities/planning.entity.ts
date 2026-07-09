@@ -20,6 +20,9 @@ export class Planning {
   id: string;
 
   @Column()
+  title: string;
+
+  @Column()
   goalType: string;
 
   @Column('text')

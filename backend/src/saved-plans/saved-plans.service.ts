@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { PlanningService } from '../planning/planning.service';
 import { CreateSavedPlanDto } from './dto/create-saved-plan.dto';
 import { SavedPlan } from './entities/saved-plan.entity';
-import { GOAL_TYPE_LABELS } from './goal-type-labels';
 
 @Injectable()
 export class SavedPlansService {
@@ -17,13 +16,12 @@ export class SavedPlansService {
 
   async create(userId: string, dto: CreateSavedPlanDto) {
     const planning = await this.planningService.findById(dto.planningId);
-    const title = `${GOAL_TYPE_LABELS[planning.goalType] ?? planning.goalType} 플랜`;
 
     const savedPlan = await this.savedPlanRepository.save(
       this.savedPlanRepository.create({
         userId,
         planningId: planning.id,
-        title,
+        title: planning.title,
         goalType: planning.goalType,
         steps: planning.steps,
         completedSteps: 0,

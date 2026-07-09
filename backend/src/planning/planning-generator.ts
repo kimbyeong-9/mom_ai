@@ -81,3 +81,14 @@ export function generatePlanningSteps(goalType: string): PlanningStepData[] {
   const templates = STEP_TEMPLATES[goalType] ?? STEP_TEMPLATES.youth;
   return templates.map((template) => ({ id: randomUUID(), ...template }));
 }
+
+const TITLE_TEMPLATES: Record<string, string> = {
+  youth: '청년 지원금 신청 절차',
+  abroad: '해외 준비 절차',
+  job: '취업 준비 절차',
+  nomad: '디지털 노마드 준비 절차',
+};
+
+export function generatePlanningTitle(goalType: string): string {
+  return TITLE_TEMPLATES[goalType] ?? TITLE_TEMPLATES.youth;
+}
