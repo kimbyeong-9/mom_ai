@@ -66,6 +66,27 @@ export class SavedPlansService {
     return null;
   }
 
+  async completeStepForUser(
+    userId: string,
+    planStepId: string,
+  ): Promise<boolean> {
+    const savedPlans = await this.savedPlanRepository.find({
+      where: { userId },
+    });
+    const plan = savedPlans.find((p) =>
+      p.steps.some((step) => step.id === planStepId),
+    );
+    if (!plan) {
+      return false;
+    }
+
+    if (plan.completedSteps < plan.totalSteps) {
+      plan.completedSteps += 1;
+      await this.savedPlanRepository.save(plan);
+    }
+    return true;
+  }
+
   private toSummary(plan: SavedPlan) {
     return {
       id: plan.id,

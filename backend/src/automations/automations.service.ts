@@ -44,8 +44,20 @@ export class AutomationsService {
     if (!automation) {
       throw new NotFoundException('자동화를 찾을 수 없어요.');
     }
+    if (automation.status === 'succeeded') {
+      return automation;
+    }
 
-    automation.status = 'succeeded';
+    if (automation.type === 'checklist') {
+      const completed = await this.savedPlansService.completeStepForUser(
+        userId,
+        automation.planStepId,
+      );
+      automation.status = completed ? 'succeeded' : 'failed';
+    } else {
+      automation.status = 'succeeded';
+    }
+
     return this.automationRepository.save(automation);
   }
 }
