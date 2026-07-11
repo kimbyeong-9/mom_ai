@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AutomationsModule } from './automations/automations.module';
+import { EventsModule } from './events/events.module';
 import { PlanningModule } from './planning/planning.module';
 import { SavedPlansModule } from './saved-plans/saved-plans.module';
 
@@ -22,6 +23,7 @@ import { SavedPlansModule } from './saved-plans/saved-plans.module';
     PlanningModule,
     SavedPlansModule,
     AutomationsModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

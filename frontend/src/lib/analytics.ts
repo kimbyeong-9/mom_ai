@@ -1,3 +1,7 @@
+import { logEvent } from "@/api/events";
+
 export function trackEvent(name: string, payload?: Record<string, unknown>) {
-  console.info(`[event] ${name}`, payload);
+  void logEvent(name, payload).catch(() => {
+    // analytics failures shouldn't surface to the user
+  });
 }
