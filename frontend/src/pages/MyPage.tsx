@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import QueryErrorState from "@/components/QueryErrorState";
+import DeleteAccountModal from "@/features/auth/components/DeleteAccountModal";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { useDeleteAccount } from "@/features/auth/hooks/useDeleteAccount";
 import { useAutomations } from "@/features/automation/hooks/useAutomations";
 import { useSavedPlans } from "@/features/save/hooks/useSavedPlans";
 import { usePageTitle } from "@/layouts/usePageTitle";
 import { formatDate } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
-import { useToastStore } from "@/store/toast.store";
 
 const PROVIDER_LABELS = {
   google: "Google로 로그인",
@@ -18,10 +20,11 @@ export default function MyPage() {
   usePageTitle("마이페이지");
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
-  const showToast = useToastStore((state) => state.show);
   const { data: profile, isLoading, isError, refetch } = useCurrentUser();
   const { data: savedPlans } = useSavedPlans();
   const { data: automations } = useAutomations();
+  const deleteAccount = useDeleteAccount();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const runningAutomationCount =
     automations?.filter((automation) => automation.status === "running").length ?? 0;
@@ -37,8 +40,13 @@ export default function MyPage() {
     navigate("/");
   };
 
-  const handleDeleteAccount = () => {
-    showToast("아직 준비 중인 기능이에요.");
+  const handleConfirmDelete = () => {
+    deleteAccount.mutate(undefined, {
+      onSuccess: () => {
+        logout();
+        navigate("/");
+      },
+    });
   };
 
   return (
@@ -104,11 +112,18 @@ export default function MyPage() {
 
             <button
               type="button"
-              onClick={handleDeleteAccount}
+              onClick={() => setIsDeleteModalOpen(true)}
               className="w-fit text-[12.5px] text-[#1F3D2E]/35 underline"
             >
               계정 삭제
             </button>
+
+            <DeleteAccountModal
+              open={isDeleteModalOpen}
+              isDeleting={deleteAccount.isPending}
+              onCancel={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleConfirmDelete}
+            />
           </>
         )}
       </div>

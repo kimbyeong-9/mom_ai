@@ -1,4 +1,12 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
 
@@ -44,6 +52,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: CurrentUserPayload) {
     return user;
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(204)
+  async deleteMe(@CurrentUser() user: CurrentUserPayload): Promise<void> {
+    await this.authService.deleteAccount(user.id);
   }
 
   private async handleOAuthCallback(

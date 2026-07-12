@@ -3,6 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { Automation } from '../automations/entities/automation.entity';
+import { Event } from '../events/entities/event.entity';
+import { SavedPlan } from '../saved-plans/entities/saved-plan.entity';
 import { User } from './entities/user.entity';
 import type { OAuthProfile } from './strategies/oauth-profile.type';
 
@@ -15,6 +18,12 @@ type AuthResult = {
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(SavedPlan)
+    private readonly savedPlanRepository: Repository<SavedPlan>,
+    @InjectRepository(Automation)
+    private readonly automationRepository: Repository<Automation>,
+    @InjectRepository(Event)
+    private readonly eventRepository: Repository<Event>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -46,6 +55,13 @@ export class AuthService {
 
   async findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
+  }
+
+  async deleteAccount(userId: string): Promise<void> {
+    await this.savedPlanRepository.delete({ userId });
+    await this.automationRepository.delete({ userId });
+    await this.eventRepository.delete({ userId });
+    await this.userRepository.delete({ id: userId });
   }
 
   private buildAuthResult(user: User): AuthResult {

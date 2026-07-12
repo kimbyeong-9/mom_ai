@@ -3,6 +3,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { Automation } from '../automations/entities/automation.entity';
+import { Event } from '../events/entities/event.entity';
+import { SavedPlan } from '../saved-plans/entities/saved-plan.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
@@ -20,7 +23,7 @@ const oauthStrategies: Provider[] = [
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, SavedPlan, Automation, Event]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
