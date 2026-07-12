@@ -8,6 +8,7 @@ import SavedPlanDetailPage from "@/pages/SavedPlanDetailPage";
 import AutomationPage from "@/pages/AutomationPage";
 import MyPage from "@/pages/MyPage";
 import LoginPage from "@/pages/LoginPage";
+import OAuthCallbackPage from "@/pages/OAuthCallbackPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/oauth-callback",
+    element: <OAuthCallbackPage />,
   },
   {
     element: <ProtectedRoute />,

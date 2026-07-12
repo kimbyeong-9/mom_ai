@@ -1,10 +1,13 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
 
+import type { AuthProvider } from '../entities/user.entity';
+
 export type CurrentUserPayload = {
   id: string;
   email: string;
   name: string;
+  provider: AuthProvider;
   createdAt: Date;
 };
 

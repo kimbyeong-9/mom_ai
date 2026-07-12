@@ -9,6 +9,11 @@ import { formatDate } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useToastStore } from "@/store/toast.store";
 
+const PROVIDER_LABELS = {
+  google: "Google로 로그인",
+  kakao: "카카오로 로그인",
+} as const;
+
 export default function MyPage() {
   usePageTitle("마이페이지");
   const navigate = useNavigate();
@@ -64,7 +69,7 @@ export default function MyPage() {
                   </span>
                 </div>
                 <span className="mt-2 w-fit rounded-full bg-[#1F3D2E]/[0.06] px-2 py-0.5 text-[11px] font-semibold text-[#1F3D2E]/60 sm:mt-0 sm:ml-auto">
-                  이메일로 로그인
+                  {PROVIDER_LABELS[profile.provider]}
                 </span>
               </div>
             </div>

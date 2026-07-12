@@ -6,19 +6,18 @@ type SocialLoginButtonProps = {
   variant: "kakao" | "google";
   label: string;
   icon: ReactNode;
-  onClick: () => void;
+  href: string;
 };
 
 export default function SocialLoginButton({
   variant,
   label,
   icon,
-  onClick,
+  href,
 }: SocialLoginButtonProps) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href={href}
       className={cn(
         "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-semibold transition-colors",
         variant === "kakao"
@@ -28,6 +27,6 @@ export default function SocialLoginButton({
     >
       {icon}
       {label}
-    </button>
+    </a>
   );
 }

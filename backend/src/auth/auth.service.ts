@@ -1,16 +1,10 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
+import type { OAuthProfile } from './strategies/oauth-profile.type';
 
 type AuthResult = {
   accessToken: string;
@@ -24,34 +18,27 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<AuthResult> {
-    const existing = await this.userRepository.findOne({
-      where: { email: dto.email },
+  async validateOAuthLogin(profile: OAuthProfile): Promise<AuthResult> {
+    let user = await this.userRepository.findOne({
+      where: { email: profile.email },
     });
-    if (existing) {
-      throw new ConflictException('이미 가입된 이메일이에요.');
-    }
 
-    const passwordHash = await bcrypt.hash(dto.password, 10);
-    const user = await this.userRepository.save(
-      this.userRepository.create({
-        email: dto.email,
-        passwordHash,
-        name: dto.name,
-      }),
-    );
-
-    return this.buildAuthResult(user);
-  }
-
-  async login(dto: LoginDto): Promise<AuthResult> {
-    const user = await this.userRepository.findOne({
-      where: { email: dto.email },
-    });
-    if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
-      throw new UnauthorizedException(
-        '이메일 또는 비밀번호가 올바르지 않아요.',
+    if (!user) {
+      user = await this.userRepository.save(
+        this.userRepository.create({
+          email: profile.email,
+          name: profile.name,
+          provider: profile.provider,
+          providerId: profile.providerId,
+        }),
       );
+    } else if (
+      user.provider !== profile.provider ||
+      user.providerId !== profile.providerId
+    ) {
+      user.provider = profile.provider;
+      user.providerId = profile.providerId;
+      await this.userRepository.save(user);
     }
 
     return this.buildAuthResult(user);

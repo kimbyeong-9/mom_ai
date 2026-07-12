@@ -5,6 +5,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+export type AuthProvider = 'google' | 'kakao';
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -14,10 +16,13 @@ export class User {
   email: string;
 
   @Column()
-  passwordHash: string;
+  name: string;
 
   @Column()
-  name: string;
+  provider: AuthProvider;
+
+  @Column()
+  providerId: string;
 
   @CreateDateColumn()
   createdAt: Date;
