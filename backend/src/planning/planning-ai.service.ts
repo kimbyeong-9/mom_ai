@@ -87,8 +87,12 @@ const MAX_ATTEMPTS = 2;
 @Injectable()
 export class PlanningAiService {
   private readonly logger = new Logger(PlanningAiService.name);
+  // meta/llama-3.3-70b-instruct's free-tier NIM deployment stopped responding
+  // to chat completions (requests hang until our timeout, every time),
+  // silently falling back to the generic per-goalType template. 3.1-70b
+  // responds normally on the same account/tier.
   private readonly model =
-    process.env.NVIDIA_MODEL ?? 'meta/llama-3.3-70b-instruct';
+    process.env.NVIDIA_MODEL ?? 'meta/llama-3.1-70b-instruct';
   // NVIDIA's free-tier NIM endpoint can be slow under load. The SDK's default
   // (10min timeout, 2 automatic retries) means a single call can hang for up
   // to ~30 minutes; bound it so a slow response falls back to the template
