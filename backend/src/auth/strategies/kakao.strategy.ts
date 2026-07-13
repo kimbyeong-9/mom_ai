@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Profile, Strategy } from 'passport-kakao';
+import { Profile, Strategy, StrategyOption } from 'passport-kakao';
 
 import type { OAuthProfile } from './oauth-profile.type';
+
+// @types/passport-kakao's StrategyOption is missing `scope`, even though the
+// underlying passport-oauth2 base strategy reads and forwards it.
+type KakaoStrategyOption = StrategyOption & { scope?: string[] };
 
 @Injectable()
 export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
@@ -11,7 +15,8 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
       clientID: process.env.KAKAO_CLIENT_ID ?? '',
       clientSecret: process.env.KAKAO_CLIENT_SECRET ?? '',
       callbackURL: `${process.env.BACKEND_URL ?? 'http://localhost:3000'}/auth/kakao/callback`,
-    });
+      scope: ['profile_nickname'],
+    } as KakaoStrategyOption);
   }
 
   validate(

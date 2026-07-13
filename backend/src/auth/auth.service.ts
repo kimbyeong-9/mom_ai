@@ -28,27 +28,19 @@ export class AuthService {
   ) {}
 
   async validateOAuthLogin(profile: OAuthProfile): Promise<AuthResult> {
-    let user = await this.userRepository.findOne({
+    const existing = await this.userRepository.findOne({
       where: { email: profile.email },
     });
 
-    if (!user) {
-      user = await this.userRepository.save(
-        this.userRepository.create({
-          email: profile.email,
-          name: profile.name,
-          provider: profile.provider,
-          providerId: profile.providerId,
-        }),
-      );
-    } else if (
-      user.provider !== profile.provider ||
-      user.providerId !== profile.providerId
-    ) {
-      user.provider = profile.provider;
-      user.providerId = profile.providerId;
-      await this.userRepository.save(user);
-    }
+    const user = await this.userRepository.save(
+      this.userRepository.create({
+        ...existing,
+        email: profile.email,
+        name: profile.name,
+        provider: profile.provider,
+        providerId: profile.providerId,
+      }),
+    );
 
     return this.buildAuthResult(user);
   }
