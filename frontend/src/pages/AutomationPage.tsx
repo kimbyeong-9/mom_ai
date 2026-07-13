@@ -4,6 +4,7 @@ import QueryErrorState from "@/components/QueryErrorState";
 import AutomationList from "@/features/automation/components/AutomationList";
 import { useAutomations } from "@/features/automation/hooks/useAutomations";
 import { useExecuteAutomation } from "@/features/automation/hooks/useExecuteAutomation";
+import { formatAutomationResult } from "@/features/automation/utils/formatAutomationResult";
 import { usePageTitle } from "@/layouts/usePageTitle";
 import { useToastStore } from "@/store/toast.store";
 
@@ -16,8 +17,12 @@ export default function AutomationPage() {
 
   const handleExecute = (id: string) => {
     const automation = automations?.find((item) => item.id === id);
-    if (automation?.status === "running" || automation?.status === "succeeded") {
+    if (automation?.status === "running") {
       showToast("아직 준비 중인 기능이에요.");
+      return;
+    }
+    if (automation?.status === "succeeded") {
+      showToast(formatAutomationResult(automation));
       return;
     }
 

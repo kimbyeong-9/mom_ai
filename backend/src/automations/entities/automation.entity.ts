@@ -27,6 +27,9 @@ export class Automation {
   @Column({ default: 'pending' })
   status: AutomationStatus;
 
+  @Column({ type: 'simple-json', nullable: true })
+  result: Record<string, unknown> | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }
