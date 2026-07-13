@@ -89,10 +89,16 @@ export class PlanningAiService {
   private readonly logger = new Logger(PlanningAiService.name);
   private readonly model =
     process.env.NVIDIA_MODEL ?? 'meta/llama-3.3-70b-instruct';
+  // NVIDIA's free-tier NIM endpoint can be slow under load. The SDK's default
+  // (10min timeout, 2 automatic retries) means a single call can hang for up
+  // to ~30 minutes; bound it so a slow response falls back to the template
+  // generator quickly instead of leaving the user staring at a spinner.
   private readonly client: OpenAI | null = process.env.NVIDIA_API_KEY
     ? new OpenAI({
         apiKey: process.env.NVIDIA_API_KEY,
         baseURL: 'https://integrate.api.nvidia.com/v1',
+        timeout: 30_000,
+        maxRetries: 0,
       })
     : null;
 

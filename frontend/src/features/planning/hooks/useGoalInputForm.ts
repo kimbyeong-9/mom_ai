@@ -1,25 +1,20 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { DEFAULT_GOAL_TYPE, type GoalTypeId } from "@/constants/goalTypes";
+import { DEFAULT_GOAL_TYPE, getGoalType, type GoalTypeId } from "@/constants/goalTypes";
 import type { GoalInput } from "../types/planning.types";
 import { useSubmitGoal } from "./useSubmitGoal";
-
-const PLANNING_ID_STORAGE_KEY = "lastPlanningId";
 
 export function useGoalInputForm() {
   const { register, handleSubmit, watch, setValue, reset } = useForm<GoalInput>({
     defaultValues: { goalType: DEFAULT_GOAL_TYPE, goalText: "" },
   });
   const submitGoal = useSubmitGoal();
-  const [planningId, setPlanningId] = useState<string | null>(() =>
-    sessionStorage.getItem(PLANNING_ID_STORAGE_KEY)
-  );
+  const [planningId, setPlanningId] = useState<string | null>(null);
 
   useEffect(() => {
     if (submitGoal.data?.id) {
       setPlanningId(submitGoal.data.id);
-      sessionStorage.setItem(PLANNING_ID_STORAGE_KEY, submitGoal.data.id);
     }
   }, [submitGoal.data?.id]);
 
@@ -30,7 +25,6 @@ export function useGoalInputForm() {
 
   const onRegenerate = () => {
     setPlanningId(null);
-    sessionStorage.removeItem(PLANNING_ID_STORAGE_KEY);
     reset({ goalType: DEFAULT_GOAL_TYPE, goalText: "" });
   };
 
@@ -39,7 +33,10 @@ export function useGoalInputForm() {
     onSubmit,
     onRegenerate,
     goalType: watch("goalType"),
-    setGoalType: (goalType: GoalTypeId) => setValue("goalType", goalType),
+    setGoalType: (goalType: GoalTypeId) => {
+      setValue("goalType", goalType);
+      setValue("goalText", getGoalType(goalType).sampleText);
+    },
     isSubmitting: submitGoal.isPending,
     planningId,
   };

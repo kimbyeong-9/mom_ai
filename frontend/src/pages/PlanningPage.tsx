@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import GoalInputForm from "@/features/planning/components/GoalInputForm";
+import PlanningEmptyState from "@/features/planning/components/PlanningEmptyState";
 import PlanningLoading from "@/features/planning/components/PlanningLoading";
 import PlanningResultCard from "@/features/planning/components/PlanningResultCard";
 import { useGoalInputForm } from "@/features/planning/hooks/useGoalInputForm";
@@ -49,11 +50,13 @@ export default function PlanningPage() {
         isSubmitting={isSubmitting}
       />
 
-      {isResultLoading && <PlanningLoading />}
+      {(isSubmitting || isResultLoading) && <PlanningLoading />}
+      {!isSubmitting && !isResultLoading && !planningResult && <PlanningEmptyState />}
       {planningResult && (
         <PlanningResultCard
           title={planningResult.title}
           goalType={planningResult.goalType}
+          goalText={planningResult.goalText}
           steps={planningResult.steps}
           onSave={handleSaveClick}
           isSaving={savePlan.isPending}

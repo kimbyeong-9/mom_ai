@@ -8,11 +8,12 @@ type GoalTypeSelectorProps = {
 
 export default function GoalTypeSelector({ value, onChange }: GoalTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs font-semibold text-[#1F3D2E]/45 sm:text-[12.5px]">빠른 시작:</span>
       {GOAL_TYPES.map((type) => (
         <GoalTypeCard
           key={type.id}
-          label={type.cardLabel}
+          label={type.label}
           icon={type.icon}
           iconBg={type.iconBg}
           iconColor={type.iconColor}
