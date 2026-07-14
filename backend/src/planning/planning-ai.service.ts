@@ -87,20 +87,21 @@ const MAX_ATTEMPTS = 2;
 @Injectable()
 export class PlanningAiService {
   private readonly logger = new Logger(PlanningAiService.name);
-  // meta/llama-3.3-70b-instruct's free-tier NIM deployment stopped responding
-  // to chat completions (requests hang until our timeout, every time),
-  // silently falling back to the generic per-goalType template. 3.1-70b
-  // responds normally on the same account/tier.
+  // NVIDIA's free-tier NIM catalog is shared across every community user of
+  // a given model, so reliability swings with demand — measured ~40% of
+  // calls timing out even after switching off the fully-dead 3.3-70b model.
+  // Moved to Gemini's free tier (Google's own serving infra, reached via its
+  // OpenAI-compatible endpoint so the `openai` SDK still works unchanged).
+  // gemini-2.5-flash/-lite are 404 ("no longer available to new users") and
+  // gemini-2.0-flash* have a hard 0 free-tier quota on newly created API
+  // keys — 3.1-flash-lite is the current-gen model this key actually has
+  // free quota for (verified 5/5 successful calls, both raw and end-to-end).
   private readonly model =
-    process.env.NVIDIA_MODEL ?? 'meta/llama-3.1-70b-instruct';
-  // NVIDIA's free-tier NIM endpoint can be slow under load. The SDK's default
-  // (10min timeout, 2 automatic retries) means a single call can hang for up
-  // to ~30 minutes; bound it so a slow response falls back to the template
-  // generator quickly instead of leaving the user staring at a spinner.
-  private readonly client: OpenAI | null = process.env.NVIDIA_API_KEY
+    process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-lite';
+  private readonly client: OpenAI | null = process.env.GEMINI_API_KEY
     ? new OpenAI({
-        apiKey: process.env.NVIDIA_API_KEY,
-        baseURL: 'https://integrate.api.nvidia.com/v1',
+        apiKey: process.env.GEMINI_API_KEY,
+        baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
         timeout: 30_000,
         maxRetries: 0,
       })
@@ -112,7 +113,7 @@ export class PlanningAiService {
   ): Promise<AiPlanResult | null> {
     if (!this.client) {
       this.logger.warn(
-        'NVIDIA_API_KEY가 설정되지 않아 AI 플랜 생성을 건너뜁니다.',
+        'GEMINI_API_KEY가 설정되지 않아 AI 플랜 생성을 건너뜁니다.',
       );
       return null;
     }
