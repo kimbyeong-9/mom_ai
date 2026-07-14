@@ -7,6 +7,7 @@ import PlanningResultCard from "@/features/planning/components/PlanningResultCar
 import { useGoalInputForm } from "@/features/planning/hooks/useGoalInputForm";
 import { usePlanningResult } from "@/features/planning/hooks/usePlanningResult";
 import LoginRequiredModal from "@/features/save/components/LoginRequiredModal";
+import SavePlanConfirmModal from "@/features/save/components/SavePlanConfirmModal";
 import { useSavePlan } from "@/features/save/hooks/useSavePlan";
 import { usePageTitle } from "@/layouts/usePageTitle";
 import { useAuthStore } from "@/store/auth.store";
@@ -20,15 +21,21 @@ export default function PlanningPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const savePlan = useSavePlan();
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isSaveConfirmOpen, setSaveConfirmOpen] = useState(false);
 
   const handleSaveClick = () => {
     if (!isAuthenticated) {
       setLoginModalOpen(true);
       return;
     }
-    if (planningId) {
-      savePlan.mutate(planningId);
-    }
+    setSaveConfirmOpen(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (!planningId) return;
+    savePlan.mutate(planningId, {
+      onSuccess: () => setSaveConfirmOpen(false),
+    });
   };
 
   return (
@@ -65,6 +72,12 @@ export default function PlanningPage() {
       )}
 
       <LoginRequiredModal open={isLoginModalOpen} onClose={() => setLoginModalOpen(false)} />
+      <SavePlanConfirmModal
+        open={isSaveConfirmOpen}
+        isSaving={savePlan.isPending}
+        onCancel={() => setSaveConfirmOpen(false)}
+        onConfirm={handleConfirmSave}
+      />
     </div>
   );
 }
