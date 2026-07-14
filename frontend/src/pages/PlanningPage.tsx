@@ -65,6 +65,7 @@ export default function PlanningPage() {
           goalType={planningResult.goalType}
           goalText={planningResult.goalText}
           steps={planningResult.steps}
+          aiGenerated={planningResult.aiGenerated}
           onSave={handleSaveClick}
           isSaving={savePlan.isPending}
           onRegenerate={onRegenerate}

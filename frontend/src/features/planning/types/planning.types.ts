@@ -20,5 +20,6 @@ export type PlanningResult = {
   goalType: GoalTypeId;
   goalText: string;
   steps: PlanningStep[];
+  aiGenerated: boolean;
   createdAt: string;
 };

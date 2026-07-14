@@ -31,6 +31,11 @@ export class Planning {
   @Column('simple-json')
   steps: PlanningStepData[];
 
+  // False means the AI call failed/timed out and this plan is the generic
+  // per-goalType template fallback — see PlanningService.create.
+  @Column({ default: true })
+  aiGenerated: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 }

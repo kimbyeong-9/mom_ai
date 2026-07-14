@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -12,6 +12,8 @@ import { PlanningAiService } from './planning-ai.service';
 
 @Injectable()
 export class PlanningService {
+  private readonly logger = new Logger(PlanningService.name);
+
   constructor(
     @InjectRepository(Planning)
     private readonly planningRepository: Repository<Planning>,
@@ -23,6 +25,12 @@ export class PlanningService {
       dto.goalType,
       dto.goalText,
     );
+    const aiGenerated = aiPlan !== null;
+    if (!aiGenerated) {
+      this.logger.warn(
+        `AI 생성 실패로 템플릿 플랜으로 대체함 (goalType: ${dto.goalType})`,
+      );
+    }
     const title = aiPlan?.title ?? generatePlanningTitle(dto.goalType);
     const steps = aiPlan?.steps ?? generatePlanningSteps(dto.goalType);
 
@@ -32,6 +40,7 @@ export class PlanningService {
         goalType: dto.goalType,
         goalText: dto.goalText,
         steps,
+        aiGenerated,
       }),
     );
     return { id: planning.id };

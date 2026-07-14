@@ -11,6 +11,7 @@ type PlanningResultCardProps = {
   goalType: GoalTypeId;
   goalText: string;
   steps: PlanningStep[];
+  aiGenerated: boolean;
   onSave: () => void;
   isSaving: boolean;
   onRegenerate: () => void;
@@ -21,6 +22,7 @@ export default function PlanningResultCard({
   goalType,
   goalText,
   steps,
+  aiGenerated,
   onSave,
   isSaving,
   onRegenerate,
@@ -37,7 +39,7 @@ export default function PlanningResultCard({
           {getGoalTypeLabel(goalType)}
         </span>
         <span className="rounded-full bg-[#1F3D2E]/[0.05] px-2 py-0.5 text-[10.5px] font-medium text-[#1F3D2E]/55">
-          + AI 생성 · 최신 정책 기준
+          {aiGenerated ? "+ AI 생성 · 최신 정책 기준" : "+ 기본 템플릿 · 참고용"}
         </span>
       </div>
 
