@@ -25,15 +25,18 @@ export const router = createBrowserRouter([
     element: <OAuthCallbackPage />,
   },
   {
-    element: <ProtectedRoute />,
+    element: <AppLayout />,
     children: [
+      // Planning Loop has no login gate by design — the goal is to let
+      // users get to an AI result before asking anything of them. Only the
+      // Save action (and everything past it) requires auth.
       {
-        element: <AppLayout />,
+        path: "/planning",
+        element: <PlanningPage />,
+      },
+      {
+        element: <ProtectedRoute />,
         children: [
-          {
-            path: "/planning",
-            element: <PlanningPage />,
-          },
           {
             path: "/saved",
             element: <SavedPage />,

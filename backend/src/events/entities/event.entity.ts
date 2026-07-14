@@ -10,8 +10,9 @@ export class Event {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  userId: string;
+  // Null for events fired before login (Planning Loop is usable signed-out).
+  @Column({ type: 'varchar', nullable: true })
+  userId: string | null;
 
   @Column()
   name: string;

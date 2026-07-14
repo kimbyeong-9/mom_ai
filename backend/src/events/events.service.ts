@@ -12,7 +12,7 @@ export class EventsService {
     private readonly eventRepository: Repository<Event>,
   ) {}
 
-  async record(userId: string, dto: CreateEventDto): Promise<void> {
+  async record(userId: string | null, dto: CreateEventDto): Promise<void> {
     await this.eventRepository.save(
       this.eventRepository.create({
         userId,
