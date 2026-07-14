@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import QueryErrorState from "@/components/QueryErrorState";
 import DeleteAccountModal from "@/features/auth/components/DeleteAccountModal";
+import LogoutConfirmModal from "@/features/auth/components/LogoutConfirmModal";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 import { useDeleteAccount } from "@/features/auth/hooks/useDeleteAccount";
 import { useAutomations } from "@/features/automation/hooks/useAutomations";
@@ -25,6 +26,7 @@ export default function MyPage() {
   const { data: automations } = useAutomations();
   const deleteAccount = useDeleteAccount();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const runningAutomationCount =
     automations?.filter((automation) => automation.status === "running").length ?? 0;
@@ -35,7 +37,7 @@ export default function MyPage() {
     { label: "진행중 자동화", value: `${runningAutomationCount}건` },
   ];
 
-  const handleLogout = () => {
+  const handleConfirmLogout = () => {
     logout();
     navigate("/");
   };
@@ -73,7 +75,7 @@ export default function MyPage() {
                     {profile.name}님
                   </span>
                   <span className="truncate text-[12px] text-[#1F3D2E]/50 sm:text-[13px]">
-                    {profile.email}
+                    {profile.email ?? "이메일 비공개"}
                   </span>
                 </div>
                 <span className="mt-2 w-fit rounded-full bg-[#1F3D2E]/[0.06] px-2 py-0.5 text-[11px] font-semibold text-[#1F3D2E]/60 sm:mt-0 sm:ml-auto">
@@ -104,7 +106,7 @@ export default function MyPage() {
 
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={() => setIsLogoutModalOpen(true)}
               className="h-12 w-full rounded-xl border border-[#1F3D2E]/15 bg-white text-[14px] font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 sm:w-[200px]"
             >
               로그아웃
@@ -123,6 +125,12 @@ export default function MyPage() {
               isDeleting={deleteAccount.isPending}
               onCancel={() => setIsDeleteModalOpen(false)}
               onConfirm={handleConfirmDelete}
+            />
+
+            <LogoutConfirmModal
+              open={isLogoutModalOpen}
+              onCancel={() => setIsLogoutModalOpen(false)}
+              onConfirm={handleConfirmLogout}
             />
           </>
         )}

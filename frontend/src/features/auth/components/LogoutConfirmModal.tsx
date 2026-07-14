@@ -1,16 +1,10 @@
-type DeleteAccountModalProps = {
+type LogoutConfirmModalProps = {
   open: boolean;
-  isDeleting: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
-export default function DeleteAccountModal({
-  open,
-  isDeleting,
-  onCancel,
-  onConfirm,
-}: DeleteAccountModalProps) {
+export default function LogoutConfirmModal({ open, onCancel, onConfirm }: LogoutConfirmModalProps) {
   if (!open) return null;
 
   return (
@@ -22,12 +16,9 @@ export default function DeleteAccountModal({
         className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="text-[16px] font-bold text-[#1F3D2E]">정말 계정을 삭제할까요?</h2>
+        <h2 className="text-[16px] font-bold text-[#1F3D2E]">로그아웃할까요?</h2>
         <p className="mt-2 text-[13px] text-[#1F3D2E]/55">
-          저장된 플랜, 연결된 자동화, 계정 정보가 모두 삭제돼요.
-        </p>
-        <p className="mt-3 rounded-xl bg-[#93402A]/[0.08] px-3.5 py-3 text-[13px] font-bold text-[#93402A]">
-          이 작업은 되돌릴 수 없으며, 삭제된 데이터는 어떤 방법으로도 복구할 수 없어요.
+          다시 로그인하면 저장된 플랜과 자동화를 그대로 이어서 사용할 수 있어요.
         </p>
         <div className="mt-5 flex justify-end gap-2">
           <button
@@ -40,10 +31,9 @@ export default function DeleteAccountModal({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={isDeleting}
-            className="h-10 rounded-xl bg-[#93402A] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#7c3522] disabled:opacity-50"
+            className="h-10 rounded-xl bg-[#1F3D2E] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#1a3325]"
           >
-            {isDeleting ? "삭제 중..." : "삭제하기"}
+            로그아웃
           </button>
         </div>
       </div>
