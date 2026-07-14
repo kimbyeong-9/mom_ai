@@ -5,7 +5,7 @@ import type { AuthProvider } from '../entities/user.entity';
 
 export type CurrentUserPayload = {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
   provider: AuthProvider;
   createdAt: Date;

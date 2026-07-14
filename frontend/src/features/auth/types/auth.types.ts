@@ -2,7 +2,7 @@ export type AuthProvider = "google" | "kakao";
 
 export type AuthUser = {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
 };
 

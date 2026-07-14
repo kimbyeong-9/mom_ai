@@ -21,8 +21,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: Profile,
     done: VerifyCallback,
   ) {
-    const email =
-      profile.emails?.[0]?.value ?? `google_${profile.id}@google.local`;
+    const email = profile.emails?.[0]?.value ?? null;
     const oauthProfile: OAuthProfile = {
       email,
       name: profile.displayName,

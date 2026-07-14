@@ -28,7 +28,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     const kakaoAccount = (
       profile._json as { kakao_account?: { email?: string } }
     )?.kakao_account;
-    const email = kakaoAccount?.email ?? `kakao_${profile.id}@kakao.local`;
+    const email = kakaoAccount?.email ?? null;
     const oauthProfile: OAuthProfile = {
       email,
       name: profile.displayName ?? profile.username ?? '카카오 사용자',

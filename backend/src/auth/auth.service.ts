@@ -11,7 +11,7 @@ import type { OAuthProfile } from './strategies/oauth-profile.type';
 
 type AuthResult = {
   accessToken: string;
-  user: { id: string; email: string; name: string };
+  user: { id: string; email: string | null; name: string };
 };
 
 @Injectable()
@@ -29,7 +29,7 @@ export class AuthService {
 
   async validateOAuthLogin(profile: OAuthProfile): Promise<AuthResult> {
     const existing = await this.userRepository.findOne({
-      where: { email: profile.email },
+      where: { provider: profile.provider, providerId: profile.providerId },
     });
 
     const user = await this.userRepository.save(
