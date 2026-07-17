@@ -10,12 +10,21 @@ import LoginRequiredModal from "@/features/save/components/LoginRequiredModal";
 import SavePlanConfirmModal from "@/features/save/components/SavePlanConfirmModal";
 import { useSavePlan } from "@/features/save/hooks/useSavePlan";
 import { usePageTitle } from "@/layouts/usePageTitle";
+import { trackEvent } from "@/lib/analytics";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function PlanningPage() {
   usePageTitle("새 목표 시작하기");
-  const { register, onSubmit, onRegenerate, goalType, setGoalType, isSubmitting, planningId } =
-    useGoalInputForm();
+  const {
+    register,
+    onGoalInputFocus,
+    onSubmit,
+    onRegenerate,
+    goalType,
+    setGoalType,
+    isSubmitting,
+    planningId,
+  } = useGoalInputForm();
   const { data: planningResult, isLoading: isResultLoading } = usePlanningResult(planningId);
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -24,6 +33,7 @@ export default function PlanningPage() {
   const [isSaveConfirmOpen, setSaveConfirmOpen] = useState(false);
 
   const handleSaveClick = () => {
+    trackEvent("save_button_clicked", { planningId });
     if (!isAuthenticated) {
       setLoginModalOpen(true);
       return;
@@ -53,6 +63,7 @@ export default function PlanningPage() {
         goalType={goalType}
         onGoalTypeChange={setGoalType}
         register={register}
+        onGoalInputFocus={onGoalInputFocus}
         onSubmit={onSubmit}
         isSubmitting={isSubmitting}
       />

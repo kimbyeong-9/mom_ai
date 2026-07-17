@@ -8,6 +8,7 @@ type GoalInputFormProps = {
   goalType: GoalTypeId;
   onGoalTypeChange: (id: GoalTypeId) => void;
   register: UseFormRegister<GoalInput>;
+  onGoalInputFocus: () => void;
   onSubmit: (event: React.FormEvent) => void;
   isSubmitting: boolean;
 };
@@ -16,9 +17,12 @@ export default function GoalInputForm({
   goalType,
   onGoalTypeChange,
   register,
+  onGoalInputFocus,
   onSubmit,
   isSubmitting,
 }: GoalInputFormProps) {
+  const goalTextField = register("goalText", { required: true });
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-3 sm:gap-3.5">
       <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-[#1F3D2E]/[0.12] bg-white p-3.5 sm:flex-row sm:items-start sm:gap-3 sm:p-[14px_16px]">
@@ -28,7 +32,8 @@ export default function GoalInputForm({
           rows={2}
           placeholder="예: 다음 달에 청년내일저축계좌 신청하려고 해요"
           className="flex-1 resize-none bg-transparent text-[13.5px] text-[#1F3D2E] placeholder:text-[#1F3D2E]/40 focus:outline-none"
-          {...register("goalText", { required: true })}
+          {...goalTextField}
+          onFocus={() => onGoalInputFocus()}
         />
         <button
           type="submit"
