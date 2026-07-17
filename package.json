@@ -1,0 +1,10 @@
+{
+  "name": "mom-ai",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n frontend,backend -c blue,green \"npm:dev --prefix frontend\" \"npm:start:dev --prefix backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
