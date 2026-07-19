@@ -14,10 +14,6 @@ import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <HomePage />,
-  },
-  {
     path: "/login",
     element: <LoginPage />,
   },
@@ -37,6 +33,10 @@ export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
+      {
+        path: "/",
+        element: <HomePage />,
+      },
       {
         path: "/planning",
         element: <PlanningPage />,

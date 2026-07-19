@@ -1,5 +1,14 @@
 export const NAV_ITEMS = [
   {
+    id: "home",
+    label: "홈",
+    mobileLabel: "홈",
+    path: "/",
+    icon: "홈",
+    iconBg: "#8A5A3A",
+    iconColor: "#FFFFFF",
+  },
+  {
     id: "planning",
     label: "Planning",
     mobileLabel: "Planning",
