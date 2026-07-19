@@ -6,9 +6,7 @@ import OpenAI from 'openai';
 import type { PlanningStepData } from './entities/planning.entity';
 
 const GOAL_TYPE_LABELS: Record<string, string> = {
-  youth: '청년 지원금',
-  abroad: '해외 준비',
-  job: '취업 준비',
+  abroad: '해외 취업',
   nomad: '디지털 노마드',
 };
 
@@ -27,17 +25,17 @@ const SYSTEM_PROMPT = `당신은 한국 사용자를 위한 생활 준비 에이
 
 다른 설명 없이 아래와 같은 JSON 형식만 출력하세요. 아래는 형식을 보여주는 예시일 뿐이며, 실제 내용은 사용자의 목표에 맞게 새로 작성해야 합니다:
 {
-  "title": "청년 지원금 신청 절차",
+  "title": "호주 취업 비자 준비 절차",
   "steps": [
     {
-      "title": "자격 요건 확인하기",
-      "description": "거주지, 소득 기준, 연령 조건을 확인해요.",
-      "actionLabel": "청년정책 포털 바로가기",
-      "actionUrl": "https://www.youthcenter.go.kr"
+      "title": "취업비자 스폰서 요건 확인하기",
+      "description": "482 Skills in Demand 비자의 스폰서 기업 요건과 필요 서류를 확인해요.",
+      "actionLabel": "호주 이민성(Home Affairs) 바로가기",
+      "actionUrl": "https://immi.homeaffairs.gov.au"
     },
     {
-      "title": "신청 서류 준비하기",
-      "description": "주민등록등본, 소득 증빙 서류 등을 미리 준비해요."
+      "title": "영문 이력서 준비하기",
+      "description": "현지 채용 시장 기준에 맞춰 이력서와 포트폴리오를 정리해요."
     }
   ]
 }`;
@@ -96,8 +94,7 @@ export class PlanningAiService {
   // gemini-2.0-flash* have a hard 0 free-tier quota on newly created API
   // keys — 3.1-flash-lite is the current-gen model this key actually has
   // free quota for (verified 5/5 successful calls, both raw and end-to-end).
-  private readonly model =
-    process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-lite';
+  private readonly model = process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-lite';
   private readonly client: OpenAI | null = process.env.GEMINI_API_KEY
     ? new OpenAI({
         apiKey: process.env.GEMINI_API_KEY,
