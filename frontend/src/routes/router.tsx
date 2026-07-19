@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "@/layouts/AppLayout";
 import HomePage from "@/pages/HomePage";
 import PlanningPage from "@/pages/PlanningPage";
+import StartPage from "@/pages/StartPage";
 import SavedPage from "@/pages/SavedPage";
 import SavedPlanDetailPage from "@/pages/SavedPlanDetailPage";
 import AutomationPage from "@/pages/AutomationPage";
@@ -24,12 +25,18 @@ export const router = createBrowserRouter([
     path: "/oauth-callback",
     element: <OAuthCallbackPage />,
   },
+  // Goal Input wizard lives outside AppLayout on purpose — it's the entry
+  // flow from the homepage CTAs, not a page reached via the sidebar nav.
+  // Planning Loop has no login gate by design — the goal is to let users
+  // get to an AI result before asking anything of them. Only the Save
+  // action (and everything past it) requires auth.
+  {
+    path: "/start",
+    element: <StartPage />,
+  },
   {
     element: <AppLayout />,
     children: [
-      // Planning Loop has no login gate by design — the goal is to let
-      // users get to an AI result before asking anything of them. Only the
-      // Save action (and everything past it) requires auth.
       {
         path: "/planning",
         element: <PlanningPage />,

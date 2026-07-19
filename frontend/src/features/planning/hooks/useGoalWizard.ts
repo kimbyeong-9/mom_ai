@@ -1,0 +1,224 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { COUNTRIES } from "@/constants/countries";
+import type { GoalTypeId } from "@/constants/goalTypes";
+import { findWizardOptionLabel, GOAL_WIZARD_STEPS } from "@/constants/goalWizardSteps";
+import { trackEvent } from "@/lib/analytics";
+import { useSubmitGoal } from "./useSubmitGoal";
+
+const STORAGE_KEY = "lifeflow_goal_wizard_progress";
+const UNDECIDED = "undecided";
+
+export type WizardAnswers = Record<string, string | string[]>;
+
+type StoredProgress = {
+  stepIndex: number;
+  answers: WizardAnswers;
+};
+
+function loadStoredProgress(): StoredProgress | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredProgress;
+    if (typeof parsed.stepIndex !== "number" || !parsed.answers) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredProgress(progress: StoredProgress) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+}
+
+function clearStoredProgress() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function composeGoalText(answers: WizardAnswers): string {
+  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
+    (code) => code !== UNDECIDED,
+  );
+  const countryNames = countryCodes
+    .map((code) => COUNTRIES.find((c) => c.code === code)?.name ?? code)
+    .join(", ");
+
+  const goalForm = findWizardOptionLabel("goalForm", answers.goalForm as string) ?? "해외 진출";
+  const field = findWizardOptionLabel("field", answers.field as string);
+  const experience = findWizardOptionLabel("experience", answers.experience as string);
+  const timeline = findWizardOptionLabel("timeline", answers.timeline as string);
+  const visaStatus = findWizardOptionLabel("visaStatus", answers.visaStatus as string);
+  const language = findWizardOptionLabel("language", answers.language as string);
+  const workStyle = findWizardOptionLabel("workStyle", answers.workStyle as string);
+
+  return [
+    `${goalForm}을 목표로 ${countryNames || "여러 국가"}에서 준비하려고 해요.`,
+    field && experience ? `희망 직군은 ${field}이고 경력은 ${experience}예요.` : null,
+    timeline ? `${timeline} 안에 준비를 마치고 싶어요.` : null,
+    visaStatus ? `비자 상태는 ${visaStatus}이에요.` : null,
+    language && workStyle ? `언어 수준은 ${language}이고, ${workStyle}을 원해요.` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function resumeContextLabel(answers: WizardAnswers): string {
+  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
+    (code) => code !== UNDECIDED,
+  );
+  const firstCountry = COUNTRIES.find((c) => c.code === countryCodes[0]);
+  return firstCountry ? `${firstCountry.name} 준비` : "지난번 답변";
+}
+
+// These are the user's own real answers, not fabricated search results —
+// safe to surface as context on the /planning result page.
+export function buildResultTags(answers: WizardAnswers): Record<string, string> {
+  const tags: Record<string, string> = {};
+
+  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
+    (code) => code !== UNDECIDED,
+  );
+  const firstCountry = COUNTRIES.find((c) => c.code === countryCodes[0]);
+  if (firstCountry) {
+    tags.country = `${firstCountry.flag} ${firstCountry.name}`;
+  }
+
+  const field = findWizardOptionLabel("field", answers.field as string);
+  const experience = findWizardOptionLabel("experience", answers.experience as string);
+  if (field && experience) {
+    tags.role = `${field} · ${experience}`;
+  } else if (field ?? experience) {
+    tags.role = (field ?? experience) as string;
+  }
+
+  const workStyle = findWizardOptionLabel("workStyle", answers.workStyle as string);
+  if (workStyle) {
+    tags.workStyle = `${workStyle} 선호`;
+  }
+
+  return tags;
+}
+
+type InitialWizardState = {
+  stepIndex: number;
+  answers: WizardAnswers;
+  pendingResume: StoredProgress | null;
+  goalInputStarted: boolean;
+};
+
+function getInitialWizardState(vertical: string | null): InitialWizardState {
+  if (vertical === "abroad-job" || vertical === "nomad") {
+    clearStoredProgress();
+    return {
+      stepIndex: 1,
+      answers: { goalForm: vertical === "nomad" ? "freelance-nomad" : "fulltime" },
+      pendingResume: null,
+      goalInputStarted: true,
+    };
+  }
+
+  const stored = loadStoredProgress();
+  const pendingResume =
+    stored && stored.stepIndex > 0 && stored.stepIndex < GOAL_WIZARD_STEPS.length ? stored : null;
+  return { stepIndex: 0, answers: {}, pendingResume, goalInputStarted: false };
+}
+
+export function useGoalWizard() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const totalSteps = GOAL_WIZARD_STEPS.length;
+
+  const [initialState] = useState(() => getInitialWizardState(searchParams.get("vertical")));
+  const [stepIndex, setStepIndex] = useState(initialState.stepIndex);
+  const [answers, setAnswers] = useState<WizardAnswers>(initialState.answers);
+  const [pendingResume, setPendingResume] = useState<StoredProgress | null>(
+    initialState.pendingResume,
+  );
+  const goalInputStartedRef = useRef(initialState.goalInputStarted);
+  const submitGoal = useSubmitGoal();
+
+  useEffect(() => {
+    if (initialState.goalInputStarted) {
+      trackEvent("goal_input_started");
+    }
+    // Fires once for the initial mount only, based on whether a homepage
+    // vertical CTA (captured in initialState) pre-answered the first step.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (pendingResume || stepIndex === 0) return;
+    saveStoredProgress({ stepIndex, answers });
+  }, [stepIndex, answers, pendingResume]);
+
+  const currentStep = GOAL_WIZARD_STEPS[stepIndex];
+  const isLastStep = stepIndex === totalSteps - 1;
+
+  const setAnswer = (stepId: string, value: string | string[]) => {
+    if (!goalInputStartedRef.current) {
+      goalInputStartedRef.current = true;
+      trackEvent("goal_input_started");
+    }
+    setAnswers((prev) => ({ ...prev, [stepId]: value }));
+  };
+
+  const goNext = () => {
+    if (isLastStep) {
+      const goalType: GoalTypeId = answers.goalForm === "freelance-nomad" ? "nomad" : "abroad";
+      clearStoredProgress();
+      submitGoal.mutate(
+        { goalType, goalText: composeGoalText(answers) },
+        {
+          onSuccess: (data) => {
+            const params = new URLSearchParams({ planningId: data.id, ...buildResultTags(answers) });
+            navigate(`/planning?${params.toString()}`);
+          },
+        },
+      );
+      return;
+    }
+    setStepIndex((index) => index + 1);
+  };
+
+  const goBack = () => {
+    setStepIndex((index) => Math.max(0, index - 1));
+  };
+
+  const handleResume = () => {
+    if (!pendingResume) return;
+    setStepIndex(pendingResume.stepIndex);
+    setAnswers(pendingResume.answers);
+    goalInputStartedRef.current = true;
+    setPendingResume(null);
+  };
+
+  const handleRestart = () => {
+    clearStoredProgress();
+    setPendingResume(null);
+    setStepIndex(0);
+    setAnswers({});
+  };
+
+  return {
+    currentStep,
+    stepIndex,
+    totalSteps,
+    isLastStep,
+    canGoBack: stepIndex > 0,
+    answers,
+    setAnswer,
+    goNext,
+    goBack,
+    resumePrompt: pendingResume
+      ? {
+          stepIndex: pendingResume.stepIndex,
+          contextLabel: resumeContextLabel(pendingResume.answers),
+        }
+      : null,
+    handleResume,
+    handleRestart,
+    isSubmitting: submitGoal.isPending,
+  };
+}
