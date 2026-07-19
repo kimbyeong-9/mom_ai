@@ -4,13 +4,17 @@ import SidebarNavItem from "./SidebarNavItem";
 
 type SidebarContentProps = {
   activePathname: string;
+  isAuthenticated: boolean;
   onLogout: () => void;
+  onRequireAuth: () => void;
   onNavigate?: () => void;
 };
 
 export default function SidebarContent({
   activePathname,
+  isAuthenticated,
   onLogout,
+  onRequireAuth,
   onNavigate,
 }: SidebarContentProps) {
   return (
@@ -34,6 +38,9 @@ export default function SidebarContent({
               iconBg={item.iconBg}
               iconColor={item.iconColor}
               isActive={isPathActive(activePathname, item.path)}
+              requiresAuth={item.requiresAuth}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={onRequireAuth}
               onNavigate={onNavigate}
             />
           ))}

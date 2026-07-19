@@ -7,6 +7,7 @@ export const NAV_ITEMS = [
     icon: "홈",
     iconBg: "#8A5A3A",
     iconColor: "#FFFFFF",
+    requiresAuth: false,
   },
   {
     id: "planning",
@@ -16,6 +17,7 @@ export const NAV_ITEMS = [
     icon: "P",
     iconBg: "#1F3D2E",
     iconColor: "#FFFFFF",
+    requiresAuth: false,
   },
   {
     id: "saved",
@@ -25,6 +27,7 @@ export const NAV_ITEMS = [
     icon: "S",
     iconBg: "#B7CBAE",
     iconColor: "#1F3D2E",
+    requiresAuth: true,
   },
   {
     id: "automation",
@@ -34,6 +37,7 @@ export const NAV_ITEMS = [
     icon: "A",
     iconBg: "#F0D6C4",
     iconColor: "#8A5A3A",
+    requiresAuth: true,
   },
   {
     id: "mypage",
@@ -43,5 +47,6 @@ export const NAV_ITEMS = [
     icon: "M",
     iconBg: "#E3DDC8",
     iconColor: "#1F3D2E",
+    requiresAuth: true,
   },
 ] as const;

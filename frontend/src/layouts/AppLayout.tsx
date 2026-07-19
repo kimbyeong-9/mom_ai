@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
+import LoginRequiredModal from "@/components/LoginRequiredModal";
 import { NAV_ITEMS } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
@@ -40,11 +41,14 @@ function MobileHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
 export default function AppLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
+  const handleRequireAuth = () => setAuthModalOpen(true);
 
   const handleLogout = () => {
     logout();
@@ -62,7 +66,12 @@ export default function AppLayout() {
               isSidebarOpen ? "w-60 px-5" : "w-0 px-0"
             )}
           >
-            <SidebarContent activePathname={location.pathname} onLogout={handleLogout} />
+            <SidebarContent
+              activePathname={location.pathname}
+              isAuthenticated={isAuthenticated}
+              onLogout={handleLogout}
+              onRequireAuth={handleRequireAuth}
+            />
           </aside>
 
           <button
@@ -97,7 +106,9 @@ export default function AppLayout() {
         >
           <SidebarContent
             activePathname={location.pathname}
+            isAuthenticated={isAuthenticated}
             onNavigate={closeMobileMenu}
+            onRequireAuth={handleRequireAuth}
             onLogout={() => {
               closeMobileMenu();
               handleLogout();
@@ -121,10 +132,19 @@ export default function AppLayout() {
               label={item.mobileLabel}
               icon={item.icon}
               isActive={isPathActive(location.pathname, item.path)}
+              requiresAuth={item.requiresAuth}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={handleRequireAuth}
             />
           ))}
         </nav>
       </div>
+
+      <LoginRequiredModal
+        open={isAuthModalOpen}
+        message="이 메뉴는 로그인 후 이용할 수 있어요."
+        onClose={() => setAuthModalOpen(false)}
+      />
     </PageTitleProvider>
   );
 }

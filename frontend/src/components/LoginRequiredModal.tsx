@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 
 type LoginRequiredModalProps = {
   open: boolean;
+  message: string;
   onClose: () => void;
 };
 
-export default function LoginRequiredModal({ open, onClose }: LoginRequiredModalProps) {
+export default function LoginRequiredModal({ open, message, onClose }: LoginRequiredModalProps) {
   if (!open) return null;
 
   return (
@@ -20,9 +21,7 @@ export default function LoginRequiredModal({ open, onClose }: LoginRequiredModal
         onClick={(event) => event.stopPropagation()}
       >
         <h2 className="text-lg font-semibold">로그인이 필요해요</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          플랜을 저장하려면 먼저 로그인해주세요.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{message}</p>
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             취소

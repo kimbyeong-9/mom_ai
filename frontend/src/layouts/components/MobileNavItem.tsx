@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { Link } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -7,12 +8,31 @@ type MobileNavItemProps = {
   label: string;
   icon: string;
   isActive: boolean;
+  requiresAuth: boolean;
+  isAuthenticated: boolean;
+  onRequireAuth: () => void;
 };
 
-export default function MobileNavItem({ to, label, icon, isActive }: MobileNavItemProps) {
+export default function MobileNavItem({
+  to,
+  label,
+  icon,
+  isActive,
+  requiresAuth,
+  isAuthenticated,
+  onRequireAuth,
+}: MobileNavItemProps) {
+  const handleClick = (event: MouseEvent) => {
+    if (requiresAuth && !isAuthenticated) {
+      event.preventDefault();
+      onRequireAuth();
+    }
+  };
+
   return (
     <Link
       to={to}
+      onClick={handleClick}
       className={cn(
         "flex flex-col items-center gap-0.5 text-[10px] font-semibold",
         isActive ? "text-[#1F3D2E]" : "text-[#1F3D2E]/40"

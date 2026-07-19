@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import LoginRequiredModal from "@/components/LoginRequiredModal";
 import PlanningLoading from "@/features/planning/components/PlanningLoading";
 import PlanningResultCard from "@/features/planning/components/PlanningResultCard";
 import { usePlanningResult } from "@/features/planning/hooks/usePlanningResult";
-import LoginRequiredModal from "@/features/save/components/LoginRequiredModal";
 import SavePlanConfirmModal from "@/features/save/components/SavePlanConfirmModal";
 import { useSavePlan } from "@/features/save/hooks/useSavePlan";
 import { usePageTitle } from "@/layouts/usePageTitle";
@@ -82,7 +82,11 @@ export default function PlanningPage() {
         />
       )}
 
-      <LoginRequiredModal open={isLoginModalOpen} onClose={() => setLoginModalOpen(false)} />
+      <LoginRequiredModal
+        open={isLoginModalOpen}
+        message="플랜을 저장하려면 먼저 로그인해주세요."
+        onClose={() => setLoginModalOpen(false)}
+      />
       <SavePlanConfirmModal
         open={isSaveConfirmOpen}
         isSaving={savePlan.isPending}

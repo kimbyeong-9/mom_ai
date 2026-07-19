@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { Link } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -9,6 +10,9 @@ type SidebarNavItemProps = {
   iconBg: string;
   iconColor: string;
   isActive: boolean;
+  requiresAuth: boolean;
+  isAuthenticated: boolean;
+  onRequireAuth: () => void;
   onNavigate?: () => void;
 };
 
@@ -19,12 +23,24 @@ export default function SidebarNavItem({
   iconBg,
   iconColor,
   isActive,
+  requiresAuth,
+  isAuthenticated,
+  onRequireAuth,
   onNavigate,
 }: SidebarNavItemProps) {
+  const handleClick = (event: MouseEvent) => {
+    if (requiresAuth && !isAuthenticated) {
+      event.preventDefault();
+      onRequireAuth();
+      return;
+    }
+    onNavigate?.();
+  };
+
   return (
     <Link
       to={to}
-      onClick={onNavigate}
+      onClick={handleClick}
       className={cn(
         "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
         isActive
