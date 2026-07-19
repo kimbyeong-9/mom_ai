@@ -8,6 +8,8 @@ export type SavedPlanSummary = {
   savedAt: string;
   completedSteps: number;
   totalSteps: number;
+  automationConnected: boolean;
+  automationConnectedAt: string | null;
 };
 
 export type SavedPlanDetail = SavedPlanSummary & {

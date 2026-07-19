@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { Automation } from '../automations/entities/automation.entity';
 import { PlanningService } from '../planning/planning.service';
 import { CreateSavedPlanDto } from './dto/create-saved-plan.dto';
 import { SavedPlan } from './entities/saved-plan.entity';
@@ -11,6 +12,8 @@ export class SavedPlansService {
   constructor(
     @InjectRepository(SavedPlan)
     private readonly savedPlanRepository: Repository<SavedPlan>,
+    @InjectRepository(Automation)
+    private readonly automationRepository: Repository<Automation>,
     private readonly planningService: PlanningService,
   ) {}
 
@@ -29,25 +32,30 @@ export class SavedPlansService {
       }),
     );
 
-    return this.toSummary(savedPlan);
+    // A plan this fresh can't have an automation connected yet.
+    return this.toSummary(savedPlan, []);
   }
 
   async findAllForUser(userId: string) {
-    const savedPlans = await this.savedPlanRepository.find({
-      where: { userId },
-      order: { savedAt: 'DESC' },
-    });
-    return savedPlans.map((plan) => this.toSummary(plan));
+    const [savedPlans, automations] = await Promise.all([
+      this.savedPlanRepository.find({
+        where: { userId },
+        order: { savedAt: 'DESC' },
+      }),
+      this.automationRepository.find({ where: { userId } }),
+    ]);
+    return savedPlans.map((plan) => this.toSummary(plan, automations));
   }
 
   async findOneForUser(userId: string, id: string) {
-    const savedPlan = await this.savedPlanRepository.findOne({
-      where: { id, userId },
-    });
+    const [savedPlan, automations] = await Promise.all([
+      this.savedPlanRepository.findOne({ where: { id, userId } }),
+      this.automationRepository.find({ where: { userId } }),
+    ]);
     if (!savedPlan) {
       throw new NotFoundException('저장된 플랜을 찾을 수 없어요.');
     }
-    return { ...this.toSummary(savedPlan), steps: savedPlan.steps };
+    return { ...this.toSummary(savedPlan, automations), steps: savedPlan.steps };
   }
 
   async findStepLabel(
@@ -87,7 +95,19 @@ export class SavedPlansService {
     return true;
   }
 
-  private toSummary(plan: SavedPlan) {
+  private toSummary(plan: SavedPlan, automations: Automation[]) {
+    const stepIds = new Set(plan.steps.map((step) => step.id));
+    const connected = automations.filter((automation) =>
+      stepIds.has(automation.planStepId),
+    );
+    const connectedAt = connected.length
+      ? connected.reduce(
+          (latest, automation) =>
+            automation.createdAt > latest ? automation.createdAt : latest,
+          connected[0].createdAt,
+        )
+      : null;
+
     return {
       id: plan.id,
       title: plan.title,
@@ -95,6 +115,8 @@ export class SavedPlansService {
       savedAt: plan.savedAt.toISOString().slice(0, 10),
       completedSteps: plan.completedSteps,
       totalSteps: plan.totalSteps,
+      automationConnected: connected.length > 0,
+      automationConnectedAt: connectedAt ? connectedAt.toISOString() : null,
     };
   }
 }

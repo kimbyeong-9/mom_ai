@@ -17,6 +17,8 @@ export default function SavedPlanList({ plans }: SavedPlanListProps) {
           savedAt={plan.savedAt}
           completedSteps={plan.completedSteps}
           totalSteps={plan.totalSteps}
+          automationConnected={plan.automationConnected}
+          automationConnectedAt={plan.automationConnectedAt}
         />
       ))}
     </div>

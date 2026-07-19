@@ -12,7 +12,7 @@ export default function SavedPage() {
       <div className="hidden sm:block">
         <h1 className="text-2xl font-extrabold text-[#1F3D2E]">내 플랜</h1>
         <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">
-          저장한 플랜을 이어가거나 다시 살펴보세요.
+          저장한 플랜을 이어가거나 자동화 현황을 확인하세요.
         </p>
       </div>
 

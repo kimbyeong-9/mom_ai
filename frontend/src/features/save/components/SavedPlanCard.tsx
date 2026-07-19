@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { getGoalType, type GoalTypeId } from "@/constants/goalTypes";
+import { formatRelativeTime } from "@/lib/utils";
 
 type SavedPlanCardProps = {
   id: string;
@@ -9,6 +10,8 @@ type SavedPlanCardProps = {
   savedAt: string;
   completedSteps: number;
   totalSteps: number;
+  automationConnected: boolean;
+  automationConnectedAt: string | null;
 };
 
 export default function SavedPlanCard({
@@ -18,9 +21,10 @@ export default function SavedPlanCard({
   savedAt,
   completedSteps,
   totalSteps,
+  automationConnected,
+  automationConnectedAt,
 }: SavedPlanCardProps) {
   const { label, iconBg, iconColor } = getGoalType(goalType);
-  const isComplete = totalSteps > 0 && completedSteps >= totalSteps;
   const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
   return (
@@ -53,9 +57,15 @@ export default function SavedPlanCard({
         <span className="text-[11.5px] font-medium text-[#1F3D2E]/50 sm:text-xs">
           {completedSteps}/{totalSteps}단계 완료
         </span>
-        <span className="hidden h-8 items-center justify-center rounded-lg border border-[#1F3D2E]/15 px-3 text-[12.5px] font-semibold text-[#1F3D2E] sm:flex">
-          {isComplete ? "다시 보기" : "이어하기"}
-        </span>
+        {automationConnected ? (
+          <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#2E7D4F]">
+            <span className="size-1.5 rounded-full bg-[#2E7D4F]" />
+            자동화 연결됨
+            {automationConnectedAt && ` · ${formatRelativeTime(automationConnectedAt)}`}
+          </span>
+        ) : (
+          <span className="text-[11px] font-medium text-[#1F3D2E]/35">자동화 미연결</span>
+        )}
       </div>
     </Link>
   );

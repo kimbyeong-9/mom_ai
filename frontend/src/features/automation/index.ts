@@ -1,4 +1,3 @@
-export { default as AutomationRecommendationList } from "./components/AutomationRecommendationList";
 export { default as AutomationList } from "./components/AutomationList";
 
 export { useConnectAutomation } from "./hooks/useConnectAutomation";
