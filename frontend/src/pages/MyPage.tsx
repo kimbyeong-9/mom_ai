@@ -28,13 +28,10 @@ export default function MyPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  const runningAutomationCount =
-    automations?.filter((automation) => automation.status === "running").length ?? 0;
-
   const stats = [
     { label: "가입일", value: profile ? formatDate(profile.createdAt, ".") : "-" },
     { label: "저장된 플랜", value: `${savedPlans?.length ?? 0}개` },
-    { label: "진행중 자동화", value: `${runningAutomationCount}건` },
+    { label: "연결된 자동화", value: `${automations?.length ?? 0}개` },
   ];
 
   const handleConfirmLogout = () => {
