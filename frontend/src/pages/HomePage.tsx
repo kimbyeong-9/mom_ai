@@ -1,30 +1,7 @@
 import { Link } from "react-router-dom";
 
-import HomeFeatureCard from "@/components/HomeFeatureCard";
-
-const HOME_FEATURES = [
-  {
-    id: 1,
-    iconBg: "#1F3D2E",
-    iconColor: "#FFFFFF",
-    title: "목표를 말하면 AI가 절차를 만들어요",
-    description: "복잡한 준비 과정, 자연어로 입력하면 단계별로 정리해드려요.",
-  },
-  {
-    id: 2,
-    iconBg: "#B7CBAE",
-    iconColor: "#1F3D2E",
-    title: "마음에 든 플랜은 저장해요",
-    description: "저장한 플랜은 언제든 다시 이어볼 수 있어요.",
-  },
-  {
-    id: 3,
-    iconBg: "#F0D6C4",
-    iconColor: "#8A5A3A",
-    title: "반복 행동은 자동화로 실행해요",
-    description: "알림, 문서 정리, 체크리스트까지 자동으로 이어져요.",
-  },
-] as const;
+import VerticalSelectCard from "@/components/VerticalSelectCard";
+import { SERVICE_VERTICALS } from "@/constants/verticals";
 
 export default function HomePage() {
   return (
@@ -58,47 +35,46 @@ export default function HomePage() {
 
         <section className="flex flex-col items-center gap-3.5 px-6 pb-5 pt-2 text-center sm:gap-5 sm:px-10 sm:pb-10 sm:pt-6">
           <span className="rounded-full bg-[#1F3D2E]/[0.08] px-3 py-1 text-xs font-semibold text-[#1F3D2E]/60">
-            MOM AI · 생활 준비 에이전트
+            MOM AI · 해외 준비 에이전트
           </span>
 
           <h1 className="max-w-[680px] text-[26px] font-extrabold leading-snug tracking-tight text-[#1F3D2E] sm:text-[44px] sm:leading-[1.25]">
-            <span className="sm:hidden">
-              생활 준비, 매번
-              <br />
-              처음부터 찾지 마세요
-            </span>
-            <span className="hidden sm:inline">
-              생활 준비, 매번 처음부터
-              <br />
-              찾지 마세요
-            </span>
+            해외에서의 다음 걸음,
+            <br />
+            어떤 방식이 맞으신가요?
           </h1>
 
           <p className="max-w-[560px] text-[13.5px] font-medium leading-relaxed text-[#1F3D2E]/65 sm:text-base">
-            청년지원금부터 해외살이, 이직, 노마드 준비까지 — AI가 절차를
-            짜고, 저장하고, 반복 행동까지 자동화해드려요.
+            두 가지 방향 중 하나를 고르면, 그에 맞는 질문과 절차로 바로
+            안내해드려요
           </p>
-
-          <Link
-            to="/planning"
-            className="mt-1 flex h-[50px] w-full items-center justify-center rounded-2xl bg-[#1F3D2E] text-[14.5px] font-semibold text-white transition-colors hover:bg-[#1a3325] sm:mt-1.5 sm:h-[52px] sm:w-[180px] sm:text-[15px]"
-          >
-            무료로 시작하기
-          </Link>
         </section>
 
-        <div className="flex flex-col gap-2.5 px-5 pb-8 sm:flex-row sm:gap-5 sm:px-14 sm:pb-10">
-          {HOME_FEATURES.map((feature, index) => (
-            <HomeFeatureCard
-              key={feature.id}
-              index={index + 1}
-              iconBg={feature.iconBg}
-              iconColor={feature.iconColor}
-              title={feature.title}
-              description={feature.description}
+        <div className="flex flex-col gap-3.5 px-5 pb-6 sm:flex-row sm:gap-6 sm:px-14 sm:pb-8">
+          {SERVICE_VERTICALS.map((vertical) => (
+            <VerticalSelectCard
+              key={vertical.id}
+              icon={vertical.icon}
+              label={vertical.label}
+              gradientFrom={vertical.gradientFrom}
+              gradientTo={vertical.gradientTo}
+              description={vertical.description}
+              tags={vertical.tags}
+              tagBg={vertical.tagBg}
+              tagColor={vertical.tagColor}
+              ctaLabel={vertical.ctaLabel}
+              variant={vertical.variant}
+              to={`/start?vertical=${vertical.id}`}
             />
           ))}
         </div>
+
+        <Link
+          to="/start"
+          className="pb-8 text-center text-xs font-semibold text-[#1F3D2E]/40 sm:pb-10 sm:text-[13.5px]"
+        >
+          잘 모르겠어요, 질문으로 찾아볼게요 →
+        </Link>
       </div>
     </div>
   );
