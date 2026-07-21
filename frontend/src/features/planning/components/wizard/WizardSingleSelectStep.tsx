@@ -17,8 +17,8 @@ export default function WizardSingleSelectStep({
   onChange,
 }: WizardSingleSelectStepProps) {
   return (
-    <div className="flex flex-col gap-[22px]">
-      <div>
+    <div className="flex h-full flex-col gap-[22px]">
+      <div className="shrink-0">
         <h2 className="whitespace-pre-line text-2xl font-extrabold leading-snug text-[#1F3D2E] sm:text-[32px]">
           {title}
         </h2>
@@ -29,17 +29,19 @@ export default function WizardSingleSelectStep({
         )}
       </div>
 
-      <div className="flex flex-col gap-2.5">
-        {options.map((option) => (
-          <WizardOptionCard
-            key={option.value}
-            label={option.label}
-            description={option.description}
-            muted={option.muted}
-            selected={value === option.value}
-            onSelect={() => onChange(option.value)}
-          />
-        ))}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-2.5 pb-1">
+          {options.map((option) => (
+            <WizardOptionCard
+              key={option.value}
+              label={option.label}
+              description={option.description}
+              muted={option.muted}
+              selected={value === option.value}
+              onSelect={() => onChange(option.value)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
