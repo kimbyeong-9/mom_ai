@@ -7,6 +7,18 @@
 
 ---
 
+## 0. 미리보기
+
+| 홈 — 버티컬 선택 | Goal Input 마법사 |
+|---|---|
+| ![홈 화면](docs/screenshots/01-home.png) | ![위저드 국가 선택 단계](docs/screenshots/02-wizard.png) |
+
+| AI 플랜 결과 (실제 검색 그라운딩) | 비로그인 시 로그인 안내 모달 |
+|---|---|
+| ![플랜 결과 화면](docs/screenshots/03-planning-result.png) | ![로그인 필요 모달](docs/screenshots/04-login-required-modal.png) |
+
+---
+
 ## 1. 문제 정의
 
 사용자는 해외취업/디지털노마드를 준비할 때 이런 문제를 반복 경험합니다.
@@ -90,13 +102,34 @@ Gemini API가 Google Search 그라운딩을 지원한다는 공식 문서를 보
 해당 조건에 맞는 채용 검색 페이지 링크가 돌아옵니다 — 모델이 학습 데이터로 추측한 게 아니라
 그 순간 실제로 검색해서 찾은 결과입니다. ([`backend/src/planning/tavily-search.service.ts`](backend/src/planning/tavily-search.service.ts))
 
-### 3-4. Automation은 "1회 실행"에서 "지속 실행"으로 가는 중간 지점
+**후속 버그 — 도메인 필터가 새고 있었다**: 실제 사용해보니 "호주 리테일 세일즈, 7년차 이상"
+같은 특정 프로필로도 결과가 전부 한국어로 된 "호주 취업" 소개 페이지였습니다. 실제 Tavily
+호출을 직접 재현해서 원인 두 가지를 확인했습니다.
+1. `include_domains`에 `"indeed.com"`을 통으로 넣어서 `kr.indeed.com`(한국어 SEO 페이지)까지
+   같이 허용되고 있었음 → `exclude_domains`로 한국어 리전 서브도메인을 명시적으로 차단
+2. 검색어를 한국어(직군/경력/근무형태 라벨)로 만들다 보니 영어권 채용 사이트 본문과 매칭이
+   안 됨 → 위저드가 이미 갖고 있던 영문 kebab-slug 값(`retail-sales`, `senior`, `hybrid` 등)과
+   ISO 국가 코드를 이용해 영어 쿼리를 만들도록 변경 ([`search-query.util.ts`](backend/src/planning/search-query.util.ts))
 
-자동화 실행이 지금은 연결하는 즉시 동기적으로 끝나는 구조입니다 (실시간 폴링 없음). 실제로
-계속 도는 자동화(채용공고 모니터링, 비자 마감일 리마인더)를 만들려면 **n8n을 실행 엔진으로 붙이는**
-설계를 해뒀습니다 — 백엔드는 자동화의 상태/이벤트만 소유하고, n8n이 스케줄 폴링 후 웹훅으로
-결과를 콜백하는 구조. 아직 구현 전이고, 설계 근거는
-[`docs/decision-log-03-automation-loop.md`](docs/decision-log-03-automation-loop.md)에 있습니다.
+수정 전/후 같은 프로필로 라이브 재검증: 15/15 결과가 `kr.indeed.com`/`kr.linkedin.com`의
+일반 소개 페이지 → 수정 후 15/15 결과가 `au.indeed.com`/`seek.com.au`/`au.linkedin.com`의
+실제 채용공고로 바뀜.
+
+### 3-4. Automation — n8n은 스케줄러, 로직은 백엔드에
+
+채용/원격구인 모니터링 자동화는 연결 시점에 1회 검색으로 끝나지 않고 계속 재검색되어야
+합니다. 처음엔 결정로그 03에 적은 대로 "n8n이 폴링·검색을 담당하고 웹훅으로 결과를 콜백"하는
+구조를 계획했지만, 막상 n8n의 노드 기반 워크플로우 안에 검색/중복 제거/매칭 계산 로직을 넣어
+보니 버전 관리도 안 되고 단위 테스트도 못 하는 게 문제였습니다.
+
+**그래서 역할을 다시 나눴습니다**: n8n은 정해진 주기로 백엔드 내부 엔드포인트
+(`POST /internal/automation-checks/run`, `X-Internal-Secret` 헤더로 보호)를 호출하는
+스케줄러 역할만 하고, 실제 검색·중복 제거(`seenResultUrls` 기반)·매칭 건수 계산은 전부
+NestJS(`AutomationsService.recheckMonitoringAutomations`) 안에서 일반 TypeScript 코드로
+처리합니다. 결과는 실제 `matchCount`/`newMatchCount`/`lastCheckedAt`으로 저장되고,
+`AutomationLiveMonitorCard`가 이 데이터를 그대로 보여줍니다. 자세한 배경은
+[`docs/decision-log-03-automation-loop.md`](docs/decision-log-03-automation-loop.md)의
+2026-07-22 개정 참고.
 
 ---
 
@@ -112,7 +145,7 @@ Gemini API가 Google Search 그라운딩을 지원한다는 공식 문서를 보
 | 자동화 연결 (마감일 리마인더) | ✅ 실제 동작 | 날짜 계산은 진짜, 알림 발송(이메일/푸시)은 아직 없음 |
 | Saved 페이지 "자동화 연결됨" 표시 | ✅ 실제 동작 | Automations 테이블 실제 조회 |
 | AI 검색 그라운딩 (Tavily + Gemini) | ✅ 실제 동작 | 실제 채용 플랫폼 검색 결과로 actionUrl 생성, 위 3-3 참고 |
-| 채용/원격구인 지속 모니터링 | ❌ 설계만 완료 | 지금은 플랜 생성 시점에 1회 검색만 함 — n8n으로 주기적 재검색 필요, 위 3-4 참고 |
+| 채용/원격구인 지속 모니터링 | ✅ 실제 동작 | n8n 스케줄 트리거 → 백엔드가 재검색·매칭 계산, 위 3-4 참고 |
 
 ---
 
@@ -159,7 +192,8 @@ Loop 구조와 프론트엔드 코딩 규칙(map 렌더링, 컴포넌트 분리 
 
 ## 8. 다음 계획
 
-1. n8n 연동 — 지금은 플랜 생성 시점에 1회만 검색하는 채용 그라운딩을, 주기적으로 재검색해서
-   새 공고를 알려주는 지속 실행 자동화로 전환
-2. 저장 플랜의 단계별 완료 상태를 카운터가 아닌 개별 플래그로 전환
-3. 검색 결과 품질 개선 — 국가별로 더 정확한 도메인 필터링, 비자 요건 등 채용 외 정보도 그라운딩 확장
+1. 저장 플랜의 단계별 완료 상태를 카운터가 아닌 개별 플래그로 전환
+2. 검색 도메인 필터를 두 버티컬 통합 목록이 아니라 국가별로 더 세분화, 비자 요건 등 채용 외
+   정보도 그라운딩 확장
+3. 비자·체류 마감일 리마인더 — 날짜 계산 이후 실제 발송(이메일/푸시)까지 연결
+4. 백엔드 핵심 로직(검색 쿼리 빌더, 위저드 스텝 스킵 로직) 테스트 코드 추가
