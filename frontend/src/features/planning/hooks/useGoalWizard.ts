@@ -52,6 +52,14 @@ function getSpecificRoleLabel(answers: WizardAnswers): string | null {
   return findWizardOptionLabel("specificRole", answers.specificRole as string);
 }
 
+// Raw wizard-option id counterpart to getSpecificRoleLabel — used for the
+// English search query (search-query.util.ts on the backend), never shown
+// on screen.
+function getSpecificRoleValue(answers: WizardAnswers): string | null {
+  if (answers.field === "other") return null;
+  return (answers.specificRole as string | undefined) ?? null;
+}
+
 function composeGoalText(answers: WizardAnswers): string {
   const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
     (code) => code !== UNDECIDED,
@@ -95,6 +103,10 @@ function buildSearchProfile(answers: WizardAnswers): SearchProfile {
       undefined,
     experience: findWizardOptionLabel("experience", answers.experience as string) ?? undefined,
     workStyle: findWizardOptionLabel("workStyle", answers.workStyle as string) ?? undefined,
+    countryCodes,
+    fieldValue: getSpecificRoleValue(answers) ?? (answers.field as string | undefined),
+    experienceValue: answers.experience as string | undefined,
+    workStyleValue: answers.workStyle as string | undefined,
   };
 }
 

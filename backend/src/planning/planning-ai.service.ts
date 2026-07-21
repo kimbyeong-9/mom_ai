@@ -8,6 +8,10 @@ import type {
   SearchProfile,
 } from './entities/planning.entity';
 import {
+  KOREAN_REGIONAL_EXCLUDE_DOMAINS,
+  buildEnglishJobQuery,
+} from './search-query.util';
+import {
   TavilySearchService,
   type TavilySearchResult,
 } from './tavily-search.service';
@@ -112,27 +116,22 @@ function validatePlan(parsed: ParsedPlan): string | null {
 
 const MAX_ATTEMPTS = 2;
 
-/** Prefers the raw wizard profile (concise keywords) over goalText (a full
- * Korean sentence like "희망 직군은 IT·개발이고...") — search engines match
- * keywords far better than prose, and job platforms are mostly English
- * content anyway. Falls back to goalText when no profile was sent (e.g.
- * older clients). */
+/** Prefers an English keyword query built from the raw wizard profile (ISO
+ * country codes, kebab-slug field/experience/workStyle ids) over goalText —
+ * job platforms like Indeed/LinkedIn/Seek are English-language sites, and a
+ * Korean query mostly surfaces "about working abroad" SEO pages instead of
+ * real listings (verified via a live Tavily test). Falls back to a Korean
+ * goalText-based query when the profile lacks the raw fields (e.g. older
+ * saved data from before this feature). */
 export function buildJobSearchQuery(
   goalType: string,
   goalText: string,
   profile: SearchProfile | null,
 ): string {
-  if (!profile) {
-    return `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText} 채용공고 채용정보`;
-  }
-  const keywords = [
-    ...profile.countries,
-    profile.field,
-    profile.experience,
-    profile.workStyle,
-    '채용공고',
-  ].filter((part): part is string => Boolean(part));
-  return keywords.join(' ');
+  return (
+    buildEnglishJobQuery(profile) ??
+    `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText} 채용공고 채용정보`
+  );
 }
 
 @Injectable()
@@ -178,6 +177,7 @@ export class PlanningAiService {
     const searchResults = await this.tavilySearchService.search(
       buildJobSearchQuery(goalType, goalText, profile),
       JOB_PLATFORM_DOMAINS[goalType],
+      KOREAN_REGIONAL_EXCLUDE_DOMAINS,
     );
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {

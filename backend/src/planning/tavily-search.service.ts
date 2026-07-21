@@ -24,6 +24,7 @@ export class TavilySearchService {
   async search(
     query: string,
     includeDomains?: string[],
+    excludeDomains?: string[],
   ): Promise<TavilySearchResult[]> {
     if (!this.apiKey) {
       return [];
@@ -42,6 +43,9 @@ export class TavilySearchService {
           max_results: 15,
           ...(includeDomains?.length
             ? { include_domains: includeDomains }
+            : {}),
+          ...(excludeDomains?.length
+            ? { exclude_domains: excludeDomains }
             : {}),
         }),
       });

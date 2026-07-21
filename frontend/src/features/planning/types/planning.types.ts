@@ -5,6 +5,10 @@ export type SearchProfile = {
   field?: string;
   experience?: string;
   workStyle?: string;
+  countryCodes?: string[];
+  fieldValue?: string;
+  experienceValue?: string;
+  workStyleValue?: string;
 };
 
 export type GoalInput = {

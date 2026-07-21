@@ -3,6 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import type { SearchProfile } from '../planning/entities/planning.entity';
+import {
+  KOREAN_REGIONAL_EXCLUDE_DOMAINS,
+  buildEnglishJobQuery,
+} from '../planning/search-query.util';
 import { TavilySearchService } from '../planning/tavily-search.service';
 import { SavedPlansService } from '../saved-plans/saved-plans.service';
 import { CreateAutomationDto } from './dto/create-automation.dto';
@@ -40,24 +44,16 @@ function extractDeadlineDate(label: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/** Prefers the user's actual wizard answers (country/field/experience/work
- * style — concise keywords) over the step's own title text, which is often
- * generic ("영문 이력서 준비하기") and has nothing to do with the search. */
+/** Prefers an English keyword query built from the user's actual wizard
+ * answers over the step's own title text, which is often generic ("영문
+ * 이력서 준비하기") and has nothing to do with the search — see
+ * buildEnglishJobQuery for why English (real job platforms are
+ * English-language sites). */
 function buildMonitoringQuery(
   label: string,
   profile: SearchProfile | null,
 ): string {
-  if (!profile) {
-    return `${label} 채용공고 채용정보`;
-  }
-  const keywords = [
-    ...profile.countries,
-    profile.field,
-    profile.experience,
-    profile.workStyle,
-    '채용공고',
-  ].filter((part): part is string => Boolean(part));
-  return keywords.join(' ');
+  return buildEnglishJobQuery(profile) ?? `${label} 채용공고 채용정보`;
 }
 
 // Used when re-searching a monitoring automation. Merged across both
@@ -196,6 +192,7 @@ export class AutomationsService {
     const results = await this.tavilySearchService.search(
       buildMonitoringQuery(automation.label, profile),
       JOB_PLATFORM_DOMAINS,
+      KOREAN_REGIONAL_EXCLUDE_DOMAINS,
     );
     const alreadySeen = new Set(automation.seenResultUrls ?? []);
     const freshResults = results.filter(

@@ -26,6 +26,23 @@ class SearchProfileDto {
   @IsOptional()
   @IsString()
   workStyle?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  countryCodes?: string[];
+
+  @IsOptional()
+  @IsString()
+  fieldValue?: string;
+
+  @IsOptional()
+  @IsString()
+  experienceValue?: string;
+
+  @IsOptional()
+  @IsString()
+  workStyleValue?: string;
 }
 
 export class CreatePlanningDto {

@@ -18,11 +18,22 @@ export type PlanningStepData = {
 // sentence) — kept around so search grounding (Gemini's plan generation and
 // later automation re-searches) can build a concise keyword query instead of
 // parsing goalText back apart.
+//
+// countries/field/experience/workStyle hold Korean display labels (unused
+// for search since real job platforms are English-language sites — kept only
+// in case a future feature needs to show the profile back to the user).
+// The *Codes/*Value siblings hold the raw wizard option ids (ISO country
+// codes, English-ish kebab slugs) that buildEnglishJobQuery actually
+// searches with — see search-query.util.ts.
 export type SearchProfile = {
   countries: string[];
   field?: string;
   experience?: string;
   workStyle?: string;
+  countryCodes?: string[];
+  fieldValue?: string;
+  experienceValue?: string;
+  workStyleValue?: string;
 };
 
 @Entity('plannings')
