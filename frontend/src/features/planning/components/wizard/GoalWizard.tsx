@@ -1,4 +1,4 @@
-import { getFieldOptions } from "@/constants/goalWizardSteps";
+import { getFieldOptions, getSubRoleOptions } from "@/constants/goalWizardSteps";
 import type { useGoalWizard } from "../../hooks/useGoalWizard";
 import WizardCountryStep from "./WizardCountryStep";
 import WizardProgressHeader from "./WizardProgressHeader";
@@ -61,7 +61,9 @@ export default function GoalWizard({
                   options={
                     currentStep.id === "field"
                       ? getFieldOptions(answers.goalForm as string | undefined)
-                      : currentStep.options
+                      : currentStep.id === "specificRole"
+                        ? getSubRoleOptions(answers.field as string | undefined)
+                        : currentStep.options
                   }
                   value={currentAnswer as string | undefined}
                   onChange={(value) => setAnswer(currentStep.id, value)}

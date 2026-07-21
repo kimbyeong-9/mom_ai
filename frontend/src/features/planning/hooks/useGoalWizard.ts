@@ -3,7 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { COUNTRIES } from "@/constants/countries";
 import type { GoalTypeId } from "@/constants/goalTypes";
-import { findWizardOptionLabel, GOAL_WIZARD_STEPS } from "@/constants/goalWizardSteps";
+import {
+  findWizardOptionLabel,
+  GOAL_WIZARD_STEPS,
+  type WizardStep,
+} from "@/constants/goalWizardSteps";
 import { trackEvent } from "@/lib/analytics";
 import type { SearchProfile } from "../types/planning.types";
 import { useSubmitGoal } from "./useSubmitGoal";
@@ -38,6 +42,15 @@ function clearStoredProgress() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+// "specificRole" only means something when field !== "other" (see
+// GOAL_WIZARD_STEPS' specificRole step, skipped entirely otherwise) — this
+// keeps a stale leftover answer from a since-changed field choice from
+// leaking into goalText/profile.
+function getSpecificRoleLabel(answers: WizardAnswers): string | null {
+  if (answers.field === "other") return null;
+  return findWizardOptionLabel("specificRole", answers.specificRole as string);
+}
+
 function composeGoalText(answers: WizardAnswers): string {
   const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
     (code) => code !== UNDECIDED,
@@ -47,7 +60,8 @@ function composeGoalText(answers: WizardAnswers): string {
     .join(", ");
 
   const goalForm = findWizardOptionLabel("goalForm", answers.goalForm as string) ?? "해외 진출";
-  const field = findWizardOptionLabel("field", answers.field as string);
+  const field =
+    getSpecificRoleLabel(answers) ?? findWizardOptionLabel("field", answers.field as string);
   const experience = findWizardOptionLabel("experience", answers.experience as string);
   const timeline = findWizardOptionLabel("timeline", answers.timeline as string);
   const visaStatus = findWizardOptionLabel("visaStatus", answers.visaStatus as string);
@@ -74,7 +88,10 @@ function buildSearchProfile(answers: WizardAnswers): SearchProfile {
   );
   return {
     countries: countryCodes.map((code) => COUNTRIES.find((c) => c.code === code)?.name ?? code),
-    field: findWizardOptionLabel("field", answers.field as string) ?? undefined,
+    field:
+      getSpecificRoleLabel(answers) ??
+      findWizardOptionLabel("field", answers.field as string) ??
+      undefined,
     experience: findWizardOptionLabel("experience", answers.experience as string) ?? undefined,
     workStyle: findWizardOptionLabel("workStyle", answers.workStyle as string) ?? undefined,
   };
@@ -101,7 +118,8 @@ export function buildResultTags(answers: WizardAnswers): Record<string, string> 
     tags.country = `${firstCountry.flag} ${firstCountry.name}`;
   }
 
-  const field = findWizardOptionLabel("field", answers.field as string);
+  const field =
+    getSpecificRoleLabel(answers) ?? findWizardOptionLabel("field", answers.field as string);
   const experience = findWizardOptionLabel("experience", answers.experience as string);
   if (field && experience) {
     tags.role = `${field} · ${experience}`;
@@ -115,6 +133,16 @@ export function buildResultTags(answers: WizardAnswers): Record<string, string> 
   }
 
   return tags;
+}
+
+// "specificRole" only applies when field !== "other" — skipping it there
+// keeps the wizard from asking a follow-up question that has nothing to
+// narrow down.
+function getEffectiveSteps(answers: WizardAnswers): readonly WizardStep[] {
+  if (answers.field === "other") {
+    return GOAL_WIZARD_STEPS.filter((step) => step.id !== "specificRole");
+  }
+  return GOAL_WIZARD_STEPS;
 }
 
 type InitialWizardState = {
@@ -137,14 +165,15 @@ function getInitialWizardState(vertical: string | null): InitialWizardState {
 
   const stored = loadStoredProgress();
   const pendingResume =
-    stored && stored.stepIndex > 0 && stored.stepIndex < GOAL_WIZARD_STEPS.length ? stored : null;
+    stored && stored.stepIndex > 0 && stored.stepIndex < getEffectiveSteps(stored.answers).length
+      ? stored
+      : null;
   return { stepIndex: 0, answers: {}, pendingResume, goalInputStarted: false };
 }
 
 export function useGoalWizard() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const totalSteps = GOAL_WIZARD_STEPS.length;
 
   const [initialState] = useState(() => getInitialWizardState(searchParams.get("vertical")));
   const [stepIndex, setStepIndex] = useState(initialState.stepIndex);
@@ -169,7 +198,9 @@ export function useGoalWizard() {
     saveStoredProgress({ stepIndex, answers });
   }, [stepIndex, answers, pendingResume]);
 
-  const currentStep = GOAL_WIZARD_STEPS[stepIndex];
+  const effectiveSteps = getEffectiveSteps(answers);
+  const totalSteps = effectiveSteps.length;
+  const currentStep = effectiveSteps[stepIndex];
   const isLastStep = stepIndex === totalSteps - 1;
 
   const setAnswer = (stepId: string, value: string | string[]) => {
