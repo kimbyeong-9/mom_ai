@@ -3,7 +3,10 @@ import { randomUUID } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 
-import type { PlanningStepData } from './entities/planning.entity';
+import type {
+  PlanningStepData,
+  SearchProfile,
+} from './entities/planning.entity';
 import {
   TavilySearchService,
   type TavilySearchResult,
@@ -109,6 +112,29 @@ function validatePlan(parsed: ParsedPlan): string | null {
 
 const MAX_ATTEMPTS = 2;
 
+/** Prefers the raw wizard profile (concise keywords) over goalText (a full
+ * Korean sentence like "희망 직군은 IT·개발이고...") — search engines match
+ * keywords far better than prose, and job platforms are mostly English
+ * content anyway. Falls back to goalText when no profile was sent (e.g.
+ * older clients). */
+export function buildJobSearchQuery(
+  goalType: string,
+  goalText: string,
+  profile: SearchProfile | null,
+): string {
+  if (!profile) {
+    return `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText} 채용공고 채용정보`;
+  }
+  const keywords = [
+    ...profile.countries,
+    profile.field,
+    profile.experience,
+    profile.workStyle,
+    '채용공고',
+  ].filter((part): part is string => Boolean(part));
+  return keywords.join(' ');
+}
+
 @Injectable()
 export class PlanningAiService {
   private readonly logger = new Logger(PlanningAiService.name);
@@ -136,6 +162,7 @@ export class PlanningAiService {
   async generatePlan(
     goalType: string,
     goalText: string,
+    profile: SearchProfile | null = null,
   ): Promise<AiPlanResult | null> {
     if (!this.client) {
       this.logger.warn(
@@ -149,7 +176,7 @@ export class PlanningAiService {
     // actual job postings (not just advice content) and, when the goal type
     // maps to known job platforms, restricted to those domains.
     const searchResults = await this.tavilySearchService.search(
-      `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText} 채용공고 채용정보`,
+      buildJobSearchQuery(goalType, goalText, profile),
       JOB_PLATFORM_DOMAINS[goalType],
     );
 

@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import type { SearchProfile } from '../planning/entities/planning.entity';
+import { TavilySearchService } from '../planning/tavily-search.service';
 import { SavedPlansService } from '../saved-plans/saved-plans.service';
 import { CreateAutomationDto } from './dto/create-automation.dto';
 import { Automation } from './entities/automation.entity';
@@ -38,25 +40,50 @@ function extractDeadlineDate(label: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function computeNotificationResult(label: string): {
-  scheduledFor: string;
-  source: 'deadline' | 'default';
-} {
-  const deadline = extractDeadlineDate(label);
-  if (deadline) {
-    return { scheduledFor: deadline.toISOString(), source: 'deadline' };
+/** Prefers the user's actual wizard answers (country/field/experience/work
+ * style — concise keywords) over the step's own title text, which is often
+ * generic ("영문 이력서 준비하기") and has nothing to do with the search. */
+function buildMonitoringQuery(
+  label: string,
+  profile: SearchProfile | null,
+): string {
+  if (!profile) {
+    return `${label} 채용공고 채용정보`;
   }
-  const fallback = new Date();
-  fallback.setDate(fallback.getDate() + 3);
-  return { scheduledFor: fallback.toISOString(), source: 'default' };
+  const keywords = [
+    ...profile.countries,
+    profile.field,
+    profile.experience,
+    profile.workStyle,
+    '채용공고',
+  ].filter((part): part is string => Boolean(part));
+  return keywords.join(' ');
 }
+
+// Used when re-searching a monitoring automation. Merged across both
+// verticals rather than looked up per-automation goalType — a reasonable
+// default until this needs per-vertical precision.
+const JOB_PLATFORM_DOMAINS = [
+  'seek.com.au',
+  'au.indeed.com',
+  'indeed.com',
+  'linkedin.com',
+  'glassdoor.com',
+  'weworkremotely.com',
+  'remoteok.com',
+  'remote.co',
+  'flexjobs.com',
+];
 
 @Injectable()
 export class AutomationsService {
+  private readonly logger = new Logger(AutomationsService.name);
+
   constructor(
     @InjectRepository(Automation)
     private readonly automationRepository: Repository<Automation>,
     private readonly savedPlansService: SavedPlansService,
+    private readonly tavilySearchService: TavilySearchService,
   ) {}
 
   async connect(userId: string, dto: CreateAutomationDto): Promise<Automation> {
@@ -105,12 +132,88 @@ export class AutomationsService {
       };
       automation.status = 'succeeded';
     } else if (automation.type === 'notification') {
-      automation.result = computeNotificationResult(automation.label);
+      const deadline = extractDeadlineDate(automation.label);
+      if (deadline) {
+        automation.result = {
+          scheduledFor: deadline.toISOString(),
+          source: 'deadline',
+        };
+      } else {
+        // No explicit date in the step text — this reads as an ongoing
+        // "keep checking for postings" step rather than a one-shot
+        // reminder, so run a real search instead of faking a date.
+        const profile = await this.savedPlansService.findStepProfile(
+          userId,
+          automation.planStepId,
+        );
+        await this.runJobSearch(automation, profile);
+      }
       automation.status = 'succeeded';
     } else {
       automation.status = 'succeeded';
     }
 
     return this.automationRepository.save(automation);
+  }
+
+  /** Called by the n8n schedule trigger — re-searches every active job
+   * monitor and updates its match counts. Not user-scoped: it sweeps every
+   * user's monitoring automations in one pass. */
+  async recheckMonitoringAutomations(): Promise<{
+    checked: number;
+    updated: number;
+  }> {
+    const candidates = await this.automationRepository.find({
+      where: { type: 'notification', status: 'succeeded' },
+    });
+    const monitoring = candidates.filter(
+      (automation) => !extractDeadlineDate(automation.label),
+    );
+
+    let updated = 0;
+    for (const automation of monitoring) {
+      try {
+        const profile = await this.savedPlansService.findStepProfile(
+          automation.userId,
+          automation.planStepId,
+        );
+        await this.runJobSearch(automation, profile);
+        await this.automationRepository.save(automation);
+        updated += 1;
+      } catch (error) {
+        this.logger.error(`자동화 재검색 실패 (id: ${automation.id})`, error);
+      }
+    }
+
+    return { checked: monitoring.length, updated };
+  }
+
+  /** Mutates `automation` in place with fresh search results — caller saves. */
+  private async runJobSearch(
+    automation: Automation,
+    profile: SearchProfile | null,
+  ): Promise<void> {
+    const results = await this.tavilySearchService.search(
+      buildMonitoringQuery(automation.label, profile),
+      JOB_PLATFORM_DOMAINS,
+    );
+    const alreadySeen = new Set(automation.seenResultUrls ?? []);
+    const freshResults = results.filter(
+      (result) => !alreadySeen.has(result.url),
+    );
+
+    automation.newMatchCount = freshResults.length;
+    automation.matchCount += freshResults.length;
+    automation.seenResultUrls = [
+      ...alreadySeen,
+      ...freshResults.map((result) => result.url),
+    ];
+    automation.lastCheckedAt = new Date();
+    automation.result = {
+      matches: results.slice(0, 5).map((result) => ({
+        title: result.title,
+        url: result.url,
+      })),
+    };
   }
 }

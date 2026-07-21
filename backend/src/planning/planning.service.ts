@@ -24,6 +24,7 @@ export class PlanningService {
     const aiPlan = await this.planningAiService.generatePlan(
       dto.goalType,
       dto.goalText,
+      dto.profile ?? null,
     );
     const aiGenerated = aiPlan !== null;
     if (!aiGenerated) {
@@ -40,6 +41,7 @@ export class PlanningService {
         goalType: dto.goalType,
         goalText: dto.goalText,
         steps,
+        profile: dto.profile ?? null,
         aiGenerated,
       }),
     );

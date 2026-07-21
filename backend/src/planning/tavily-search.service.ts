@@ -38,8 +38,8 @@ export class TavilySearchService {
         },
         body: JSON.stringify({
           query,
-          search_depth: 'basic',
-          max_results: 5,
+          search_depth: 'advanced',
+          max_results: 15,
           ...(includeDomains?.length
             ? { include_domains: includeDomains }
             : {}),

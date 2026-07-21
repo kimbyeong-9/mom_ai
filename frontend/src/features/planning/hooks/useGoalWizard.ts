@@ -5,6 +5,7 @@ import { COUNTRIES } from "@/constants/countries";
 import type { GoalTypeId } from "@/constants/goalTypes";
 import { findWizardOptionLabel, GOAL_WIZARD_STEPS } from "@/constants/goalWizardSteps";
 import { trackEvent } from "@/lib/analytics";
+import type { SearchProfile } from "../types/planning.types";
 import { useSubmitGoal } from "./useSubmitGoal";
 
 const STORAGE_KEY = "lifeflow_goal_wizard_progress";
@@ -62,6 +63,21 @@ function composeGoalText(answers: WizardAnswers): string {
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+// Raw (undecorated) values for the backend to build search queries from —
+// buildResultTags below is for on-screen display and mixes in flags/emoji/
+// suffixes that don't belong in a search query.
+function buildSearchProfile(answers: WizardAnswers): SearchProfile {
+  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
+    (code) => code !== UNDECIDED,
+  );
+  return {
+    countries: countryCodes.map((code) => COUNTRIES.find((c) => c.code === code)?.name ?? code),
+    field: findWizardOptionLabel("field", answers.field as string) ?? undefined,
+    experience: findWizardOptionLabel("experience", answers.experience as string) ?? undefined,
+    workStyle: findWizardOptionLabel("workStyle", answers.workStyle as string) ?? undefined,
+  };
 }
 
 function resumeContextLabel(answers: WizardAnswers): string {
@@ -169,7 +185,7 @@ export function useGoalWizard() {
       const goalType: GoalTypeId = answers.goalForm === "freelance-nomad" ? "nomad" : "abroad";
       clearStoredProgress();
       submitGoal.mutate(
-        { goalType, goalText: composeGoalText(answers) },
+        { goalType, goalText: composeGoalText(answers), profile: buildSearchProfile(answers) },
         {
           onSuccess: (data) => {
             const params = new URLSearchParams({ planningId: data.id, ...buildResultTags(answers) });

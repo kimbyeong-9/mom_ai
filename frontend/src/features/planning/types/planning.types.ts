@@ -1,8 +1,16 @@
 import type { GoalTypeId } from "@/constants/goalTypes";
 
+export type SearchProfile = {
+  countries: string[];
+  field?: string;
+  experience?: string;
+  workStyle?: string;
+};
+
 export type GoalInput = {
   goalType: GoalTypeId;
   goalText: string;
+  profile?: SearchProfile;
 };
 
 export type PlanningStep = {

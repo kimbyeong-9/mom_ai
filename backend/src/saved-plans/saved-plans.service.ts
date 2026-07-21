@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Automation } from '../automations/entities/automation.entity';
+import type { SearchProfile } from '../planning/entities/planning.entity';
 import { PlanningService } from '../planning/planning.service';
 import { CreateSavedPlanDto } from './dto/create-saved-plan.dto';
 import { SavedPlan } from './entities/saved-plan.entity';
@@ -27,6 +28,7 @@ export class SavedPlansService {
         title: planning.title,
         goalType: planning.goalType,
         steps: planning.steps,
+        profile: planning.profile,
         completedSteps: 0,
         totalSteps: planning.steps.length,
       }),
@@ -55,7 +57,10 @@ export class SavedPlansService {
     if (!savedPlan) {
       throw new NotFoundException('저장된 플랜을 찾을 수 없어요.');
     }
-    return { ...this.toSummary(savedPlan, automations), steps: savedPlan.steps };
+    return {
+      ...this.toSummary(savedPlan, automations),
+      steps: savedPlan.steps,
+    };
   }
 
   async findStepLabel(
@@ -69,6 +74,23 @@ export class SavedPlansService {
       const step = plan.steps.find((s) => s.id === planStepId);
       if (step) {
         return step.title;
+      }
+    }
+    return null;
+  }
+
+  /** Used by AutomationsService to build a keyword search query from the
+   * user's actual wizard answers instead of just the step's own title text. */
+  async findStepProfile(
+    userId: string,
+    planStepId: string,
+  ): Promise<SearchProfile | null> {
+    const savedPlans = await this.savedPlanRepository.find({
+      where: { userId },
+    });
+    for (const plan of savedPlans) {
+      if (plan.steps.some((step) => step.id === planStepId)) {
+        return plan.profile;
       }
     }
     return null;

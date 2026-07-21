@@ -5,7 +5,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import type { PlanningStepData } from '../../planning/entities/planning.entity';
+import type {
+  PlanningStepData,
+  SearchProfile,
+} from '../../planning/entities/planning.entity';
 
 @Entity('saved_plans')
 export class SavedPlan {
@@ -26,6 +29,9 @@ export class SavedPlan {
 
   @Column('simple-json')
   steps: PlanningStepData[];
+
+  @Column({ type: 'simple-json', nullable: true })
+  profile: SearchProfile | null;
 
   @Column({ default: 0 })
   completedSteps: number;

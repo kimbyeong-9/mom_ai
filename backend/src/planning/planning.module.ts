@@ -11,6 +11,6 @@ import { TavilySearchService } from './tavily-search.service';
   imports: [TypeOrmModule.forFeature([Planning])],
   controllers: [PlanningController],
   providers: [PlanningService, PlanningAiService, TavilySearchService],
-  exports: [PlanningService],
+  exports: [PlanningService, TavilySearchService],
 })
 export class PlanningModule {}
