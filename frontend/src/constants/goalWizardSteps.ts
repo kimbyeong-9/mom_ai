@@ -22,6 +22,46 @@ export type CountryWizardStep = {
 
 export type WizardStep = SingleSelectWizardStep | CountryWizardStep;
 
+// 해외취업 covers literally any occupation, so this stays broad. Kept
+// separate from NOMAD_FIELD_OPTIONS below because a "노마드" vertical answer
+// should only ever offer occupations that are actually remote-workable —
+// showing 요식업·숙박/생산·물류 there would be a real, findable job we can't
+// deliver on.
+export const ABROAD_FIELD_OPTIONS: readonly WizardOption[] = [
+  { value: "it-dev", label: "IT·개발" },
+  { value: "design", label: "디자인" },
+  { value: "marketing", label: "마케팅·콘텐츠" },
+  { value: "support-ops", label: "고객지원·운영" },
+  { value: "sales", label: "영업·세일즈" },
+  { value: "finance-accounting", label: "회계·재무" },
+  { value: "hr", label: "인사·총무" },
+  { value: "engineering", label: "엔지니어링(기계·전기·화학 등)" },
+  { value: "hospitality", label: "요식업·숙박" },
+  { value: "logistics", label: "생산·물류" },
+  { value: "education", label: "교육" },
+  { value: "healthcare", label: "의료·헬스케어" },
+  { value: "legal", label: "법률·컨설팅" },
+  { value: "other", label: "기타", muted: true },
+];
+
+export const NOMAD_FIELD_OPTIONS: readonly WizardOption[] = [
+  { value: "it-dev", label: "IT·개발" },
+  { value: "design", label: "디자인" },
+  { value: "marketing", label: "마케팅·콘텐츠" },
+  { value: "support-ops", label: "고객지원·운영(원격)" },
+  { value: "translation", label: "번역·통역" },
+  { value: "writing-content", label: "카피라이팅·콘텐츠 제작" },
+  { value: "education-online", label: "온라인 강의·튜터링" },
+  { value: "consulting-coaching", label: "컨설팅·코칭" },
+  { value: "other", label: "기타", muted: true },
+];
+
+/** goalForm === "freelance-nomad" is the only wizard path that maps to the
+ * 디지털노마드 vertical — everything else (fulltime/working-holiday) is 해외취업. */
+export function getFieldOptions(goalForm: string | undefined): readonly WizardOption[] {
+  return goalForm === "freelance-nomad" ? NOMAD_FIELD_OPTIONS : ABROAD_FIELD_OPTIONS;
+}
+
 // Steps 3(field), 6(visaStatus), and 7(language) weren't part of the original
 // 5-step mockup (which only detailed 1/2/4/5/8 of an 8-step flow) — filled in
 // here with commonly used categories for overseas job search / digital nomad
@@ -61,17 +101,9 @@ export const GOAL_WIZARD_STEPS: readonly WizardStep[] = [
     type: "single-select",
     title: "어떤 직군을 희망하시나요?",
     subtitle: "가장 가까운 항목을 골라주세요",
-    options: [
-      { value: "it-dev", label: "IT·개발" },
-      { value: "design", label: "디자인" },
-      { value: "marketing", label: "마케팅·콘텐츠" },
-      { value: "support-ops", label: "고객지원·운영" },
-      { value: "hospitality", label: "요식업·숙박" },
-      { value: "logistics", label: "생산·물류" },
-      { value: "education", label: "교육" },
-      { value: "healthcare", label: "의료·헬스케어" },
-      { value: "other", label: "기타", muted: true },
-    ],
+    // Placeholder — GoalWizard swaps this for ABROAD_FIELD_OPTIONS or
+    // NOMAD_FIELD_OPTIONS at render time based on the goalForm answer.
+    options: ABROAD_FIELD_OPTIONS,
   },
   {
     id: "experience",
@@ -135,6 +167,14 @@ export const GOAL_WIZARD_STEPS: readonly WizardStep[] = [
 
 export function findWizardOptionLabel(stepId: string, value: string | undefined): string | null {
   if (!value) return null;
+
+  // "field" shows one of two option sets depending on the vertical (see
+  // getFieldOptions) — search the union so a label lookup finds either.
+  if (stepId === "field") {
+    const merged = [...ABROAD_FIELD_OPTIONS, ...NOMAD_FIELD_OPTIONS];
+    return merged.find((option) => option.value === value)?.label ?? null;
+  }
+
   const step = GOAL_WIZARD_STEPS.find((s) => s.id === stepId);
   if (!step || step.type !== "single-select") return null;
   return step.options.find((option) => option.value === value)?.label ?? null;

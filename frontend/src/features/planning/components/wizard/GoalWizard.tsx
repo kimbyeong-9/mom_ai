@@ -1,3 +1,4 @@
+import { getFieldOptions } from "@/constants/goalWizardSteps";
 import type { useGoalWizard } from "../../hooks/useGoalWizard";
 import WizardCountryStep from "./WizardCountryStep";
 import WizardProgressHeader from "./WizardProgressHeader";
@@ -57,7 +58,11 @@ export default function GoalWizard({
                 <WizardSingleSelectStep
                   title={currentStep.title}
                   subtitle={currentStep.subtitle}
-                  options={currentStep.options}
+                  options={
+                    currentStep.id === "field"
+                      ? getFieldOptions(answers.goalForm as string | undefined)
+                      : currentStep.options
+                  }
                   value={currentAnswer as string | undefined}
                   onChange={(value) => setAnswer(currentStep.id, value)}
                 />
