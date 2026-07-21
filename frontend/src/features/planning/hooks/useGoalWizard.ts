@@ -20,6 +20,7 @@ export type WizardAnswers = Record<string, string | string[]>;
 type StoredProgress = {
   stepIndex: number;
   answers: WizardAnswers;
+  skipGoalForm: boolean;
 };
 
 function loadStoredProgress(): StoredProgress | null {
@@ -28,7 +29,7 @@ function loadStoredProgress(): StoredProgress | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredProgress;
     if (typeof parsed.stepIndex !== "number" || !parsed.answers) return null;
-    return parsed;
+    return { ...parsed, skipGoalForm: parsed.skipGoalForm ?? false };
   } catch {
     return null;
   }
@@ -135,14 +136,21 @@ export function buildResultTags(answers: WizardAnswers): Record<string, string> 
   return tags;
 }
 
-// "specificRole" only applies when field !== "other" — skipping it there
-// keeps the wizard from asking a follow-up question that has nothing to
-// narrow down.
-function getEffectiveSteps(answers: WizardAnswers): readonly WizardStep[] {
-  if (answers.field === "other") {
-    return GOAL_WIZARD_STEPS.filter((step) => step.id !== "specificRole");
-  }
-  return GOAL_WIZARD_STEPS;
+// "goalForm" is skipped when the homepage CTA already told us the vertical
+// (see getInitialWizardState) — the homepage's two cards ARE this question,
+// so asking it again inside the wizard would be a literal repeat. Only the
+// "잘 모르겠어요" fallback entry (no vertical param) needs to ask it for real.
+// "specificRole" is skipped whenever field === "other" — nothing to narrow
+// down there.
+function getEffectiveSteps(
+  answers: WizardAnswers,
+  skipGoalForm: boolean,
+): readonly WizardStep[] {
+  return GOAL_WIZARD_STEPS.filter((step) => {
+    if (skipGoalForm && step.id === "goalForm") return false;
+    if (answers.field === "other" && step.id === "specificRole") return false;
+    return true;
+  });
 }
 
 type InitialWizardState = {
@@ -150,25 +158,35 @@ type InitialWizardState = {
   answers: WizardAnswers;
   pendingResume: StoredProgress | null;
   goalInputStarted: boolean;
+  skipGoalForm: boolean;
 };
 
 function getInitialWizardState(vertical: string | null): InitialWizardState {
   if (vertical === "abroad-job" || vertical === "nomad") {
     clearStoredProgress();
     return {
-      stepIndex: 1,
+      stepIndex: 0,
       answers: { goalForm: vertical === "nomad" ? "freelance-nomad" : "fulltime" },
       pendingResume: null,
       goalInputStarted: true,
+      skipGoalForm: true,
     };
   }
 
   const stored = loadStoredProgress();
   const pendingResume =
-    stored && stored.stepIndex > 0 && stored.stepIndex < getEffectiveSteps(stored.answers).length
+    stored &&
+    stored.stepIndex > 0 &&
+    stored.stepIndex < getEffectiveSteps(stored.answers, stored.skipGoalForm).length
       ? stored
       : null;
-  return { stepIndex: 0, answers: {}, pendingResume, goalInputStarted: false };
+  return {
+    stepIndex: 0,
+    answers: {},
+    pendingResume,
+    goalInputStarted: false,
+    skipGoalForm: false,
+  };
 }
 
 export function useGoalWizard() {
@@ -181,6 +199,12 @@ export function useGoalWizard() {
   const [pendingResume, setPendingResume] = useState<StoredProgress | null>(
     initialState.pendingResume,
   );
+  // A resumed session may have been originally started via a homepage vertical
+  // CTA (skipGoalForm: true) even though *this* mount has no vertical param —
+  // effectiveSteps must follow whichever value the stored stepIndex was
+  // actually computed against, so this is restored in handleResume() below
+  // rather than only read once from initialState.
+  const [skipGoalForm, setSkipGoalForm] = useState(initialState.skipGoalForm);
   const goalInputStartedRef = useRef(initialState.goalInputStarted);
   const submitGoal = useSubmitGoal();
 
@@ -195,10 +219,10 @@ export function useGoalWizard() {
 
   useEffect(() => {
     if (pendingResume || stepIndex === 0) return;
-    saveStoredProgress({ stepIndex, answers });
-  }, [stepIndex, answers, pendingResume]);
+    saveStoredProgress({ stepIndex, answers, skipGoalForm });
+  }, [stepIndex, answers, pendingResume, skipGoalForm]);
 
-  const effectiveSteps = getEffectiveSteps(answers);
+  const effectiveSteps = getEffectiveSteps(answers, skipGoalForm);
   const totalSteps = effectiveSteps.length;
   const currentStep = effectiveSteps[stepIndex];
   const isLastStep = stepIndex === totalSteps - 1;
@@ -237,6 +261,7 @@ export function useGoalWizard() {
     if (!pendingResume) return;
     setStepIndex(pendingResume.stepIndex);
     setAnswers(pendingResume.answers);
+    setSkipGoalForm(pendingResume.skipGoalForm);
     goalInputStartedRef.current = true;
     setPendingResume(null);
   };
