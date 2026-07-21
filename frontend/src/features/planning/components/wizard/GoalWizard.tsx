@@ -30,8 +30,8 @@ export default function GoalWizard({
       : Boolean(currentAnswer);
 
   return (
-    <div className="flex overflow-hidden rounded-[20px] border-[1.5px] border-[#1F3D2E]/[0.08] bg-white shadow-[0_8px_24px_rgba(31,61,46,0.06)] sm:rounded-3xl">
-      <div className="flex flex-1 flex-col">
+    <div className="flex h-[640px] max-h-[85vh] overflow-hidden rounded-[20px] border-[1.5px] border-[#1F3D2E]/[0.08] bg-white shadow-[0_8px_24px_rgba(31,61,46,0.06)] sm:rounded-3xl">
+      <div className="flex min-h-0 flex-1 flex-col">
         {resumePrompt ? (
           <WizardResumePrompt
             stepIndex={resumePrompt.stepIndex}
@@ -42,11 +42,11 @@ export default function GoalWizard({
           />
         ) : (
           <>
-            <div className="px-6 pt-5 sm:px-8 sm:pt-7">
+            <div className="shrink-0 px-6 pt-5 sm:px-8 sm:pt-7">
               <WizardProgressHeader current={stepIndex + 1} total={totalSteps} />
             </div>
 
-            <div className="flex-1 px-6 py-7 sm:px-8">
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-7 sm:px-8">
               {currentStep.type === "country-multi-select" ? (
                 <WizardCountryStep
                   title={currentStep.title}
@@ -71,7 +71,7 @@ export default function GoalWizard({
               )}
             </div>
 
-            <div className="flex gap-2.5 px-6 pb-6 sm:px-8 sm:pb-7">
+            <div className="flex shrink-0 gap-2.5 px-6 pb-6 sm:px-8 sm:pb-7">
               <button
                 type="button"
                 onClick={goBack}
