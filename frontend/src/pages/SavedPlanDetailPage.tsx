@@ -7,6 +7,7 @@ import { useConnectAutomation } from "@/features/automation/hooks/useConnectAuto
 import PlanningLoading from "@/features/planning/components/PlanningLoading";
 import SavedStepRow from "@/features/save/components/SavedStepRow";
 import { useSavedPlanDetail } from "@/features/save/hooks/useSavedPlanDetail";
+import { useToggleStepCompletion } from "@/features/save/hooks/useToggleStepCompletion";
 import { usePageTitle } from "@/layouts/usePageTitle";
 
 export default function SavedPlanDetailPage() {
@@ -16,6 +17,8 @@ export default function SavedPlanDetailPage() {
   const { data: automations } = useAutomations();
   const connectAutomation = useConnectAutomation();
   const [connectingStepId, setConnectingStepId] = useState<string | null>(null);
+  const toggleStepCompletion = useToggleStepCompletion(id ?? "");
+  const [togglingStepId, setTogglingStepId] = useState<string | null>(null);
 
   if (isLoading || !savedPlan) {
     return (
@@ -27,6 +30,8 @@ export default function SavedPlanDetailPage() {
 
   const sortedSteps = [...savedPlan.steps].sort((a, b) => a.order - b.order);
   const connectedStepIds = new Set((automations ?? []).map((a) => a.planStepId));
+  const completedStepIds = new Set(savedPlan.completedStepIds);
+  const currentStepId = sortedSteps.find((step) => !completedStepIds.has(step.id))?.id;
 
   const handleConnect = (planStepId: string) => {
     setConnectingStepId(planStepId);
@@ -34,6 +39,13 @@ export default function SavedPlanDetailPage() {
       { planStepId, type: "notification" },
       { onSettled: () => setConnectingStepId(null) },
     );
+  };
+
+  const handleToggleComplete = (planStepId: string) => {
+    setTogglingStepId(planStepId);
+    toggleStepCompletion.mutate(planStepId, {
+      onSettled: () => setTogglingStepId(null),
+    });
   };
 
   return (
@@ -44,21 +56,23 @@ export default function SavedPlanDetailPage() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {sortedSteps.map((step, index) => (
+        {sortedSteps.map((step) => (
           <SavedStepRow
             key={step.id}
             order={step.order}
             title={step.title}
             status={
-              index < savedPlan.completedSteps
+              completedStepIds.has(step.id)
                 ? "done"
-                : index === savedPlan.completedSteps
+                : step.id === currentStepId
                   ? "current"
                   : "upcoming"
             }
             automationConnected={connectedStepIds.has(step.id)}
             isConnecting={connectingStepId === step.id}
+            isToggling={togglingStepId === step.id}
             onConnect={() => handleConnect(step.id)}
+            onToggleComplete={() => handleToggleComplete(step.id)}
           />
         ))}
       </div>

@@ -15,3 +15,8 @@ export async function fetchSavedPlanDetail(id: string): Promise<SavedPlanDetail>
   const { data } = await api.get<SavedPlanDetail>(`/saved-plans/${id}`);
   return data;
 }
+
+export async function toggleStepCompletion(stepId: string): Promise<{ completed: boolean }> {
+  const { data } = await api.patch<{ completed: boolean }>(`/saved-plans/steps/${stepId}/toggle`);
+  return data;
+}

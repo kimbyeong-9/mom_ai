@@ -4,7 +4,9 @@ type SavedStepRowProps = {
   status: "done" | "current" | "upcoming";
   automationConnected: boolean;
   isConnecting: boolean;
+  isToggling: boolean;
   onConnect: () => void;
+  onToggleComplete: () => void;
 };
 
 export default function SavedStepRow({
@@ -13,15 +15,23 @@ export default function SavedStepRow({
   status,
   automationConnected,
   isConnecting,
+  isToggling,
   onConnect,
+  onToggleComplete,
 }: SavedStepRowProps) {
   if (status === "current") {
     return (
       <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-[#1F3D2E] bg-white p-4 shadow-[0_4px_14px_rgba(31,61,46,0.07)]">
         <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#1F3D2E] text-[10px] font-bold text-[#1F3D2E]">
+          <button
+            type="button"
+            onClick={onToggleComplete}
+            disabled={isToggling}
+            aria-label="이 단계 완료로 표시"
+            className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#1F3D2E] text-[10px] font-bold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/10 disabled:opacity-50"
+          >
             {order}
-          </span>
+          </button>
           <span className="text-[13.5px] font-bold text-[#1F3D2E]">{title}</span>
         </div>
 
@@ -58,13 +68,19 @@ export default function SavedStepRow({
         isDone ? "opacity-55" : ""
       }`}
     >
-      {isDone ? (
-        <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#1F3D2E] text-[9px] font-bold text-white">
-          ✓
-        </span>
-      ) : (
-        <span className="mt-0.5 size-5 shrink-0 rounded-full border-[1.5px] border-[#1F3D2E]/30" />
-      )}
+      <button
+        type="button"
+        onClick={onToggleComplete}
+        disabled={isToggling}
+        aria-label={isDone ? "완료 취소하기" : "이 단계 완료로 표시"}
+        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold transition-colors disabled:opacity-50 ${
+          isDone
+            ? "bg-[#1F3D2E] text-white hover:bg-[#1a3325]"
+            : "border-[1.5px] border-[#1F3D2E]/30 hover:border-[#1F3D2E]/60"
+        }`}
+      >
+        {isDone ? "✓" : ""}
+      </button>
       <span
         className={`text-[13px] font-semibold ${isDone ? "text-[#1F3D2E]" : "text-[#1F3D2E]/60"}`}
       >

@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 
 import {
   CurrentUser,
@@ -29,5 +38,20 @@ export class SavedPlansController {
   @Get(':id')
   findOne(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.savedPlansService.findOneForUser(user.id, id);
+  }
+
+  @Patch('steps/:stepId/toggle')
+  async toggleStep(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('stepId') stepId: string,
+  ) {
+    const result = await this.savedPlansService.toggleStepForUser(
+      user.id,
+      stepId,
+    );
+    if (!result) {
+      throw new NotFoundException('저장된 플랜에서 이 단계를 찾을 수 없어요.');
+    }
+    return result;
   }
 }

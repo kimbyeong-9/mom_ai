@@ -14,4 +14,5 @@ export type SavedPlanSummary = {
 
 export type SavedPlanDetail = SavedPlanSummary & {
   steps: PlanningStep[];
+  completedStepIds: string[];
 };

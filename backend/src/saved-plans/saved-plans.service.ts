@@ -29,7 +29,7 @@ export class SavedPlansService {
         goalType: planning.goalType,
         steps: planning.steps,
         profile: planning.profile,
-        completedSteps: 0,
+        completedStepIds: [],
         totalSteps: planning.steps.length,
       }),
     );
@@ -60,6 +60,7 @@ export class SavedPlansService {
     return {
       ...this.toSummary(savedPlan, automations),
       steps: savedPlan.steps,
+      completedStepIds: savedPlan.completedStepIds ?? [],
     };
   }
 
@@ -96,22 +97,55 @@ export class SavedPlansService {
     return null;
   }
 
+  private async findPlanOwningStep(
+    userId: string,
+    planStepId: string,
+  ): Promise<SavedPlan | null> {
+    const savedPlans = await this.savedPlanRepository.find({
+      where: { userId },
+    });
+    return (
+      savedPlans.find((p) => p.steps.some((step) => step.id === planStepId)) ??
+      null
+    );
+  }
+
+  /** Toggles one step's completion on/off — returns the step's new completed
+   * state, or null if no saved plan of this user owns that step. Used by the
+   * manual "완료로 표시" UI action. */
+  async toggleStepForUser(
+    userId: string,
+    planStepId: string,
+  ): Promise<{ completed: boolean } | null> {
+    const plan = await this.findPlanOwningStep(userId, planStepId);
+    if (!plan) {
+      return null;
+    }
+
+    const completedStepIds = plan.completedStepIds ?? [];
+    const alreadyDone = completedStepIds.includes(planStepId);
+    plan.completedStepIds = alreadyDone
+      ? completedStepIds.filter((id) => id !== planStepId)
+      : [...completedStepIds, planStepId];
+    await this.savedPlanRepository.save(plan);
+    return { completed: !alreadyDone };
+  }
+
+  /** Force-marks one step done (idempotent) — used when a "checklist"
+   * automation executes, as opposed to the manual toggle above. Returns
+   * false if no saved plan of this user owns that step. */
   async completeStepForUser(
     userId: string,
     planStepId: string,
   ): Promise<boolean> {
-    const savedPlans = await this.savedPlanRepository.find({
-      where: { userId },
-    });
-    const plan = savedPlans.find((p) =>
-      p.steps.some((step) => step.id === planStepId),
-    );
+    const plan = await this.findPlanOwningStep(userId, planStepId);
     if (!plan) {
       return false;
     }
 
-    if (plan.completedSteps < plan.totalSteps) {
-      plan.completedSteps += 1;
+    const completedStepIds = plan.completedStepIds ?? [];
+    if (!completedStepIds.includes(planStepId)) {
+      plan.completedStepIds = [...completedStepIds, planStepId];
       await this.savedPlanRepository.save(plan);
     }
     return true;
@@ -135,7 +169,7 @@ export class SavedPlansService {
       title: plan.title,
       goalType: plan.goalType,
       savedAt: plan.savedAt.toISOString().slice(0, 10),
-      completedSteps: plan.completedSteps,
+      completedSteps: (plan.completedStepIds ?? []).length,
       totalSteps: plan.totalSteps,
       automationConnected: connected.length > 0,
       automationConnectedAt: connectedAt ? connectedAt.toISOString() : null,
