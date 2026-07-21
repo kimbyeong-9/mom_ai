@@ -30,7 +30,7 @@ export default function GoalWizard({
       : Boolean(currentAnswer);
 
   return (
-    <div className="flex h-[760px] max-h-[90vh] overflow-hidden rounded-[20px] border-[1.5px] border-[#1F3D2E]/[0.08] bg-white shadow-[0_8px_24px_rgba(31,61,46,0.06)] sm:rounded-3xl">
+    <div className="flex h-[820px] max-h-[92vh] overflow-hidden rounded-[20px] border-[1.5px] border-[#1F3D2E]/[0.08] bg-white shadow-[0_8px_24px_rgba(31,61,46,0.06)] sm:rounded-3xl">
       <div className="flex min-h-0 flex-1 flex-col">
         {resumePrompt ? (
           <WizardResumePrompt
