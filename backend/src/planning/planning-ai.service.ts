@@ -4,6 +4,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import OpenAI from 'openai';
 
 import type { PlanningStepData } from './entities/planning.entity';
+import {
+  TavilySearchService,
+  type TavilySearchResult,
+} from './tavily-search.service';
 
 const GOAL_TYPE_LABELS: Record<string, string> = {
   abroad: '해외 취업',
@@ -17,7 +21,10 @@ const SYSTEM_PROMPT = `당신은 한국 사용자를 위한 생활 준비 에이
 - 3~5단계로 구성하세요.
 - 각 단계는 사용자가 오늘 바로 시작할 수 있을 만큼 구체적이어야 합니다.
 - 사용자가 입력한 구체적인 상황(날짜, 기관명, 세부 사항 등)을 단계 설명에 반영하세요.
-- actionLabel/actionUrl은 실제로 참고할 만한 공식 기관 웹사이트가 명확할 때만 채우고, 확실하지 않으면 생략하세요.
+- 사용자 메시지에 "실제 검색 결과"가 포함되어 있으면, actionUrl은 반드시 그 목록에 있는 URL 중에서만
+  골라서 채우세요. 검색 결과에 없는 URL은 절대 지어내지 마세요.
+- 검색 결과가 없으면 actionLabel/actionUrl은 실제로 확실히 아는 공식 기관 웹사이트일 때만 채우고,
+  확실하지 않으면 생략하세요.
 - title(플랜 제목)은 전체 플랜을 한 줄로 요약하는 제목입니다.
 - 각 단계의 title은 반드시 그 단계에서 실제로 하는 행동을 설명하는 구체적인 한국어 문장이어야 합니다.
   "step1", "1단계", "단계 1" 같은 placeholder 텍스트는 절대 사용하지 마세요.
@@ -104,6 +111,8 @@ export class PlanningAiService {
       })
     : null;
 
+  constructor(private readonly tavilySearchService: TavilySearchService) {}
+
   async generatePlan(
     goalType: string,
     goalText: string,
@@ -115,8 +124,14 @@ export class PlanningAiService {
       return null;
     }
 
+    // Real web search, done once up front — every retry attempt below reuses
+    // the same results rather than re-searching.
+    const searchResults = await this.tavilySearchService.search(
+      `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText}`,
+    );
+
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      const parsed = await this.requestPlan(goalType, goalText);
+      const parsed = await this.requestPlan(goalType, goalText, searchResults);
       if (!parsed) {
         continue;
       }
@@ -145,8 +160,19 @@ export class PlanningAiService {
   private async requestPlan(
     goalType: string,
     goalText: string,
+    searchResults: TavilySearchResult[],
   ): Promise<ParsedPlan | null> {
     try {
+      const searchContext =
+        searchResults.length > 0
+          ? `\n\n실제 검색 결과 (참고해서 답변하고, actionUrl은 이 목록의 URL 중에서만 고르세요):\n${searchResults
+              .map(
+                (result, index) =>
+                  `${index + 1}. ${result.title}\n${result.url}\n${result.content}`,
+              )
+              .join('\n\n')}`
+          : '';
+
       const response = await this.client!.chat.completions.create({
         model: this.model,
         max_tokens: 2048,
@@ -157,7 +183,7 @@ export class PlanningAiService {
           { role: 'system', content: SYSTEM_PROMPT },
           {
             role: 'user',
-            content: `목표 유형: ${GOAL_TYPE_LABELS[goalType] ?? goalType}\n사용자 입력: ${goalText}`,
+            content: `목표 유형: ${GOAL_TYPE_LABELS[goalType] ?? goalType}\n사용자 입력: ${goalText}${searchContext}`,
           },
         ],
       });
