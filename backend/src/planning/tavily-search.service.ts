@@ -21,7 +21,10 @@ export class TavilySearchService {
   private readonly logger = new Logger(TavilySearchService.name);
   private readonly apiKey = process.env.TAVILY_API_KEY;
 
-  async search(query: string): Promise<TavilySearchResult[]> {
+  async search(
+    query: string,
+    includeDomains?: string[],
+  ): Promise<TavilySearchResult[]> {
     if (!this.apiKey) {
       return [];
     }
@@ -37,6 +40,9 @@ export class TavilySearchService {
           query,
           search_depth: 'basic',
           max_results: 5,
+          ...(includeDomains?.length
+            ? { include_domains: includeDomains }
+            : {}),
         }),
       });
 

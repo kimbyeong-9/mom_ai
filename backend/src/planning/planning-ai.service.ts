@@ -14,6 +14,26 @@ const GOAL_TYPE_LABELS: Record<string, string> = {
   nomad: '디지털 노마드',
 };
 
+// Biases search toward actual job-posting platforms instead of generic blogs
+// or videos — the point of grounding here is surfacing real listings, not
+// just "someone wrote about this once."
+const JOB_PLATFORM_DOMAINS: Record<string, string[]> = {
+  abroad: [
+    'seek.com.au',
+    'au.indeed.com',
+    'indeed.com',
+    'linkedin.com',
+    'glassdoor.com',
+  ],
+  nomad: [
+    'weworkremotely.com',
+    'remoteok.com',
+    'remote.co',
+    'linkedin.com',
+    'flexjobs.com',
+  ],
+};
+
 const SYSTEM_PROMPT = `당신은 한국 사용자를 위한 생활 준비 에이전트 LifeFlow AI의 플래너입니다.
 사용자가 입력한 목표를 바탕으로 실제로 실행 가능한 단계별 준비 절차를 만들어주세요.
 
@@ -125,9 +145,12 @@ export class PlanningAiService {
     }
 
     // Real web search, done once up front — every retry attempt below reuses
-    // the same results rather than re-searching.
+    // the same results rather than re-searching. Query is biased toward
+    // actual job postings (not just advice content) and, when the goal type
+    // maps to known job platforms, restricted to those domains.
     const searchResults = await this.tavilySearchService.search(
-      `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText}`,
+      `${GOAL_TYPE_LABELS[goalType] ?? goalType} ${goalText} 채용공고 채용정보`,
+      JOB_PLATFORM_DOMAINS[goalType],
     );
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
