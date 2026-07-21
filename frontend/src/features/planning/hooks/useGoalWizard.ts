@@ -47,7 +47,7 @@ function clearStoredProgress() {
 // GOAL_WIZARD_STEPS' specificRole step, skipped entirely otherwise) — this
 // keeps a stale leftover answer from a since-changed field choice from
 // leaking into goalText/profile.
-function getSpecificRoleLabel(answers: WizardAnswers): string | null {
+export function getSpecificRoleLabel(answers: WizardAnswers): string | null {
   if (answers.field === "other") return null;
   return findWizardOptionLabel("specificRole", answers.specificRole as string);
 }
@@ -55,7 +55,7 @@ function getSpecificRoleLabel(answers: WizardAnswers): string | null {
 // Raw wizard-option id counterpart to getSpecificRoleLabel — used for the
 // English search query (search-query.util.ts on the backend), never shown
 // on screen.
-function getSpecificRoleValue(answers: WizardAnswers): string | null {
+export function getSpecificRoleValue(answers: WizardAnswers): string | null {
   if (answers.field === "other") return null;
   return (answers.specificRole as string | undefined) ?? null;
 }
@@ -154,7 +154,7 @@ export function buildResultTags(answers: WizardAnswers): Record<string, string> 
 // "잘 모르겠어요" fallback entry (no vertical param) needs to ask it for real.
 // "specificRole" is skipped whenever field === "other" — nothing to narrow
 // down there.
-function getEffectiveSteps(
+export function getEffectiveSteps(
   answers: WizardAnswers,
   skipGoalForm: boolean,
 ): readonly WizardStep[] {
