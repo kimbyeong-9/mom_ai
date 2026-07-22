@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { GoogleIcon, KakaoIcon } from "@/features/auth/components/SocialIcons";
 import SocialLoginButton from "@/features/auth/components/SocialLoginButton";
 
@@ -9,6 +11,13 @@ const SOCIAL_LOGIN_OPTIONS = [
 export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F5F1E6] px-6 py-16">
+      <Link
+        to="/"
+        className="absolute left-5 top-5 z-20 flex h-8 items-center justify-center rounded-full border border-[#1F3D2E]/15 bg-white px-4 text-xs font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 sm:left-8 sm:top-8 sm:h-10 sm:px-5 sm:text-sm"
+      >
+        ← 홈으로
+      </Link>
+
       <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-[#B7CBAE] sm:size-72" />
       <div className="pointer-events-none absolute -bottom-20 -left-16 size-48 rounded-full bg-[#F0D6C4] sm:size-72" />
 

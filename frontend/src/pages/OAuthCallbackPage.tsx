@@ -22,7 +22,7 @@ export default function OAuthCallbackPage() {
     fetchCurrentUser()
       .then((user) => {
         login(token, user);
-        navigate("/planning", { replace: true });
+        navigate("/", { replace: true });
       })
       .catch(() => {
         showToast("로그인에 실패했어요.");

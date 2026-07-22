@@ -19,6 +19,13 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
+      // A plain assignment (not the router's SPA navigate) on purpose — this
+      // runs from an axios interceptor, which importing the router singleton
+      // into would pull `createBrowserRouter()` (needs a real `document`)
+      // into every module that imports this file, including non-DOM test
+      // environments. A full reload is also the safer choice for "session
+      // just expired" anyway: it guarantees no stale in-memory query cache.
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }
