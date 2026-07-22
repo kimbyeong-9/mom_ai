@@ -7,6 +7,7 @@ import StartPage from "@/pages/StartPage";
 import SavedPage from "@/pages/SavedPage";
 import SavedPlanDetailPage from "@/pages/SavedPlanDetailPage";
 import AutomationPage from "@/pages/AutomationPage";
+import MetricsPage from "@/pages/MetricsPage";
 import MyPage from "@/pages/MyPage";
 import LoginPage from "@/pages/LoginPage";
 import OAuthCallbackPage from "@/pages/OAuthCallbackPage";
@@ -61,6 +62,13 @@ export const router = createBrowserRouter([
           {
             path: "/mypage",
             element: <MyPage />,
+          },
+          // Founder-only Loop metrics dashboard — not in NAV_ITEMS on
+          // purpose (backend gates it to ADMIN_EMAIL anyway), reached by
+          // direct URL only.
+          {
+            path: "/metrics",
+            element: <MetricsPage />,
           },
         ],
       },
