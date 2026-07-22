@@ -9,6 +9,10 @@ type WizardCountryStepProps = {
   subtitle?: string;
   value: string[];
   onChange: (codes: string[]) => void;
+  // 해외취업은 정식 채용 절차상 한 국가로 좁혀야 해서 단일 선택, 디지털노마드는
+  // 여러 국가를 옮겨다니는 게 자연스러워서 다중 선택 — GoalWizard가 goalForm
+  // 답변(freelance-nomad 여부)으로 판단해서 내려준다.
+  singleSelect?: boolean;
 };
 
 export default function WizardCountryStep({
@@ -16,6 +20,7 @@ export default function WizardCountryStep({
   subtitle,
   value,
   onChange,
+  singleSelect = false,
 }: WizardCountryStepProps) {
   const [query, setQuery] = useState("");
   const isUndecided = value.includes(UNDECIDED);
@@ -29,6 +34,10 @@ export default function WizardCountryStep({
       : [];
 
   const toggleCountry = (code: string) => {
+    if (singleSelect) {
+      onChange(value.includes(code) ? [] : [code]);
+      return;
+    }
     const next = value.includes(code) ? value.filter((c) => c !== code) : [...value, code];
     onChange(next.filter((c) => c !== UNDECIDED));
   };

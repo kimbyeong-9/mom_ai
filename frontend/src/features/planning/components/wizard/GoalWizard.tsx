@@ -50,7 +50,12 @@ export default function GoalWizard({
               {currentStep.type === "country-multi-select" ? (
                 <WizardCountryStep
                   title={currentStep.title}
-                  subtitle={currentStep.subtitle}
+                  subtitle={
+                    answers.goalForm === "freelance-nomad"
+                      ? currentStep.subtitle
+                      : "해외취업은 한 국가만 선택할 수 있어요"
+                  }
+                  singleSelect={answers.goalForm !== "freelance-nomad"}
                   value={(currentAnswer as string[]) ?? []}
                   onChange={(codes) => setAnswer(currentStep.id, codes)}
                 />
