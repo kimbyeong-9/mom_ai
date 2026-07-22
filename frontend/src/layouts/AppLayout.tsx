@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import LoginRequiredModal from "@/components/LoginRequiredModal";
 import { NAV_ITEMS } from "@/constants/navigation";
@@ -43,17 +43,10 @@ export default function AppLayout() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const logout = useAuthStore((state) => state.logout);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
   const handleRequireAuth = () => setAuthModalOpen(true);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
 
   return (
     <PageTitleProvider>
@@ -69,7 +62,6 @@ export default function AppLayout() {
             <SidebarContent
               activePathname={location.pathname}
               isAuthenticated={isAuthenticated}
-              onLogout={handleLogout}
               onRequireAuth={handleRequireAuth}
             />
           </aside>
@@ -109,10 +101,6 @@ export default function AppLayout() {
             isAuthenticated={isAuthenticated}
             onNavigate={closeMobileMenu}
             onRequireAuth={handleRequireAuth}
-            onLogout={() => {
-              closeMobileMenu();
-              handleLogout();
-            }}
           />
         </aside>
 
