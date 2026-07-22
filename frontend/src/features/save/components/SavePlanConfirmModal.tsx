@@ -24,7 +24,7 @@ export default function SavePlanConfirmModal({
       >
         <h2 className="text-[16px] font-bold text-[#1F3D2E]">이 플랜을 저장할까요?</h2>
         <p className="mt-2 text-[13px] text-[#1F3D2E]/55">
-          내 플랜에 저장하면 언제든 다시 확인하고 자동화를 연결할 수 있어요.
+          나의 플랜에 저장하면 언제든 다시 확인하고 자동화를 연결할 수 있어요.
         </p>
         <div className="mt-5 flex justify-end gap-2">
           <button

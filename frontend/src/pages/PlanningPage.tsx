@@ -12,7 +12,7 @@ import { trackEvent } from "@/lib/analytics";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function PlanningPage() {
-  usePageTitle("Planning");
+  usePageTitle("플랜");
   const [searchParams] = useSearchParams();
   const planningId = searchParams.get("planningId");
   const tags = {

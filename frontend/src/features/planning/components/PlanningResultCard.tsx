@@ -78,7 +78,7 @@ export default function PlanningResultCard({
           disabled={isSaving}
           className="flex h-11 flex-1 items-center justify-center rounded-xl bg-[#1F3D2E] text-[13.5px] font-semibold text-white transition-colors hover:bg-[#1a3325] disabled:opacity-50 sm:flex-none sm:px-8"
         >
-          {isSaving ? "저장 중..." : "내 플랜에 저장"}
+          {isSaving ? "저장 중..." : "나의 플랜에 저장"}
         </button>
         <Link
           to="/start"
