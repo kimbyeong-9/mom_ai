@@ -29,7 +29,7 @@ export default function PlanningPage() {
   const [isSaveConfirmOpen, setSaveConfirmOpen] = useState(false);
 
   const handleSaveClick = () => {
-    trackEvent("save_button_clicked", { planningId });
+    trackEvent("save_button_clicked", { planningId, isAuthenticated });
     if (!isAuthenticated) {
       setLoginModalOpen(true);
       return;
