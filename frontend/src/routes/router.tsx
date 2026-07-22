@@ -30,13 +30,15 @@ export const router = createBrowserRouter([
     path: "/start",
     element: <StartPage />,
   },
+  // Homepage is a standalone landing page (own header/footer, no sidebar) —
+  // same reasoning as /start above, it's the entry point, not an in-app page.
+  {
+    path: "/",
+    element: <HomePage />,
+  },
   {
     element: <AppLayout />,
     children: [
-      {
-        path: "/",
-        element: <HomePage />,
-      },
       {
         path: "/planning",
         element: <PlanningPage />,

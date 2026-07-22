@@ -2,69 +2,93 @@ import { Link } from "react-router-dom";
 
 import VerticalSelectCard from "@/components/VerticalSelectCard";
 import { SERVICE_VERTICALS } from "@/constants/verticals";
-import { usePageTitle } from "@/layouts/usePageTitle";
+
+// 자주 묻는 질문/이용약관/개인정보처리방침은 아직 실제 콘텐츠가 없어 자리만
+// 잡아두고 비활성화 — 페이지가 생기면 Link로 교체한다.
+const DISABLED_LINK_CLASSNAME = "cursor-not-allowed text-[#1F3D2E]/30";
 
 export default function HomePage() {
-  usePageTitle("홈");
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F5F1E6]">
-      <div className="pointer-events-none absolute -right-10 -top-8 size-36 rounded-full bg-[#B7CBAE] opacity-40 sm:-right-16 sm:-top-10 sm:size-52" />
-      <div className="pointer-events-none absolute -left-10 bottom-44 size-24 rounded-full bg-[#F0D6C4] opacity-40 sm:-left-12 sm:bottom-16 sm:size-36" />
+    <div className="flex min-h-screen flex-col bg-[#F5F1E6]">
+      <header className="flex items-center justify-between px-5 py-4 sm:px-10 sm:py-6">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#1F3D2E]">
+            <span className="text-[13px] font-bold text-white">L</span>
+          </div>
+          <span className="whitespace-nowrap text-[15px] font-extrabold tracking-tight text-[#1F3D2E]">
+            LifeFlow AI
+          </span>
+        </div>
 
-      <div className="relative z-10 mx-auto flex max-w-6xl flex-col">
-        <header className="flex items-center justify-end px-5 py-4 sm:px-14 sm:py-6">
+        <nav className="hidden items-center gap-7 sm:flex">
+          {SERVICE_VERTICALS.map((vertical) => (
+            <Link
+              key={vertical.id}
+              to={`/start?vertical=${vertical.id}`}
+              className="text-sm font-semibold text-[#1F3D2E]/70 transition-colors hover:text-[#1F3D2E]"
+            >
+              {vertical.label}
+            </Link>
+          ))}
+          <span className={`text-sm font-semibold ${DISABLED_LINK_CLASSNAME}`}>자주 묻는 질문</span>
+        </nav>
+
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
             to="/login"
-            className="flex h-8 items-center justify-center rounded-full border border-[#1F3D2E]/15 bg-white px-4 text-xs font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 sm:h-[42px] sm:px-6 sm:text-sm"
+            className="flex h-8 items-center justify-center rounded-full border border-[#1F3D2E]/15 bg-white px-4 text-xs font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 sm:h-10 sm:px-5 sm:text-sm"
           >
             로그인
           </Link>
-        </header>
+          <Link
+            to="/start"
+            className="hidden h-10 items-center justify-center rounded-full bg-[#1F3D2E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1a3325] sm:flex"
+          >
+            시작하기
+          </Link>
+        </div>
+      </header>
 
-        <section className="flex flex-col items-center gap-3.5 px-6 pb-5 pt-2 text-center sm:gap-5 sm:px-10 sm:pb-10 sm:pt-6">
-          <span className="rounded-full bg-[#1F3D2E]/[0.08] px-3 py-1 text-xs font-semibold text-[#1F3D2E]/60">
-            MOM AI · 해외 준비 에이전트
-          </span>
-
-          <h1 className="max-w-[680px] text-[26px] font-extrabold leading-snug tracking-tight text-[#1F3D2E] sm:text-[44px] sm:leading-[1.25]">
-            해외에서의 다음 걸음,
+      <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-8 sm:flex-row sm:gap-20 sm:px-10">
+        <div className="flex w-full max-w-[420px] flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+          <h1 className="text-[26px] font-extrabold leading-snug text-[#1F3D2E] sm:text-[38px] sm:leading-[1.25]">
+            어떤 방식이
             <br />
-            어떤 방식이 맞으신가요?
+            맞으신가요?
           </h1>
-
-          <p className="max-w-[560px] text-[13.5px] font-medium leading-relaxed text-[#1F3D2E]/65 sm:text-base">
-            두 가지 방향 중 하나를 고르면, 그에 맞는 질문과 절차로 바로
-            안내해드려요
+          <p className="text-[13.5px] font-medium leading-relaxed text-[#1F3D2E]/60 sm:text-[15px]">
+            둘 중 하나를 고르면, 그에 맞는 질문과 절차로 바로 안내해드려요
           </p>
-        </section>
+          <Link
+            to="/start"
+            className="mt-1 text-xs font-semibold text-[#1F3D2E]/45 underline-offset-2 hover:underline sm:text-sm"
+          >
+            잘 모르겠어요, 질문으로 찾아볼게요 →
+          </Link>
+        </div>
 
-        <div className="flex flex-col gap-3.5 px-5 pb-6 sm:flex-row sm:gap-6 sm:px-14 sm:pb-8">
+        <div className="flex w-full max-w-[420px] flex-col gap-3">
           {SERVICE_VERTICALS.map((vertical) => (
             <VerticalSelectCard
               key={vertical.id}
               icon={vertical.icon}
               label={vertical.label}
-              gradientFrom={vertical.gradientFrom}
-              gradientTo={vertical.gradientTo}
+              iconBg={vertical.iconBg}
+              iconColor={vertical.iconColor}
               description={vertical.description}
-              tags={vertical.tags}
-              tagBg={vertical.tagBg}
-              tagColor={vertical.tagColor}
-              ctaLabel={vertical.ctaLabel}
-              variant={vertical.variant}
               to={`/start?vertical=${vertical.id}`}
             />
           ))}
         </div>
+      </main>
 
-        <Link
-          to="/start"
-          className="pb-8 text-center text-xs font-semibold text-[#1F3D2E]/40 sm:pb-10 sm:text-[13.5px]"
-        >
-          잘 모르겠어요, 질문으로 찾아볼게요 →
-        </Link>
-      </div>
+      <footer className="flex flex-col items-center justify-between gap-2 border-t border-[#1F3D2E]/8 px-6 py-5 text-xs text-[#1F3D2E]/40 sm:flex-row sm:px-10">
+        <span>© 2026 LifeFlow AI</span>
+        <div className="flex items-center gap-4">
+          <span className={DISABLED_LINK_CLASSNAME}>이용약관</span>
+          <span className={DISABLED_LINK_CLASSNAME}>개인정보처리방침</span>
+        </div>
+      </footer>
     </div>
   );
 }
