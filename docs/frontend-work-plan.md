@@ -57,8 +57,8 @@
 - [x] Automation 페이지 — 연결된 자동화 목록, 원클릭 실행 버튼, 실행 상태 배지
 - [x] 백엔드 `POST /automations`, `GET /automations`, `POST /automations/:id/execute` 연동 완료
 - [x] 이벤트 연결: `automation_connected`, `automation_executed`, `automation_execution_succeeded`
-- [ ] **실제로는 전부 즉시 계산되는 가짜 로직** (외부 세계와 실제 상호작용 없음) — 결정로그 03의
-      2026-07 개정에 따라 n8n 연동으로 실제화 필요 (Phase 4 이후 작업)
+- [x] ~~실제로는 전부 즉시 계산되는 가짜 로직~~ — Phase 4에서 n8n 연동으로 실제화 완료 (채용
+      모니터링, 마감일 리마인더 실제 이메일 발송 둘 다). 아래 Phase 4 참고
 
 ---
 
