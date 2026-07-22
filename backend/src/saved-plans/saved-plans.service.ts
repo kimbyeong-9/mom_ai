@@ -60,7 +60,7 @@ export class SavedPlansService {
     return {
       ...this.toSummary(savedPlan, automations),
       steps: savedPlan.steps,
-      completedStepIds: savedPlan.completedStepIds ?? [],
+      completedStepIds: this.getCompletedStepIds(savedPlan),
     };
   }
 
@@ -122,7 +122,7 @@ export class SavedPlansService {
       return null;
     }
 
-    const completedStepIds = plan.completedStepIds ?? [];
+    const completedStepIds = this.getCompletedStepIds(plan);
     const alreadyDone = completedStepIds.includes(planStepId);
     plan.completedStepIds = alreadyDone
       ? completedStepIds.filter((id) => id !== planStepId)
@@ -143,7 +143,7 @@ export class SavedPlansService {
       return false;
     }
 
-    const completedStepIds = plan.completedStepIds ?? [];
+    const completedStepIds = this.getCompletedStepIds(plan);
     if (!completedStepIds.includes(planStepId)) {
       plan.completedStepIds = [...completedStepIds, planStepId];
       await this.savedPlanRepository.save(plan);
@@ -169,10 +169,20 @@ export class SavedPlansService {
       title: plan.title,
       goalType: plan.goalType,
       savedAt: plan.savedAt.toISOString().slice(0, 10),
-      completedSteps: (plan.completedStepIds ?? []).length,
+      completedSteps: this.getCompletedStepIds(plan).length,
       totalSteps: plan.totalSteps,
       automationConnected: connected.length > 0,
       automationConnectedAt: connectedAt ? connectedAt.toISOString() : null,
     };
+  }
+
+  // Legacy rows written before the completedSteps-counter → completedStepIds
+  // migration can still have a stray non-array value in this column (e.g. a
+  // literal `0` surviving TypeORM's synchronize table-copy) — `?? []` alone
+  // doesn't catch that since 0 isn't null/undefined, so `new Set(0)` or
+  // `(0).includes(...)` would throw downstream. Guard with Array.isArray
+  // instead of a plain nullish check.
+  private getCompletedStepIds(plan: SavedPlan): string[] {
+    return Array.isArray(plan.completedStepIds) ? plan.completedStepIds : [];
   }
 }
