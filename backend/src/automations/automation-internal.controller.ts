@@ -14,4 +14,9 @@ export class AutomationInternalController {
   run() {
     return this.automationsService.recheckMonitoringAutomations();
   }
+
+  @Post('deadline-reminders')
+  sendDeadlineReminders() {
+    return this.automationsService.sendDeadlineReminders();
+  }
 }

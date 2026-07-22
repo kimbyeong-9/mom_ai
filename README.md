@@ -131,6 +131,14 @@ NestJS(`AutomationsService.recheckMonitoringAutomations`) 안에서 일반 TypeS
 [`docs/decision-log-03-automation-loop.md`](docs/decision-log-03-automation-loop.md)의
 2026-07-22 개정 참고.
 
+같은 스케줄러 패턴을 비자·체류 마감일 리마인더에도 재사용했습니다 — n8n이 매일
+`POST /internal/automation-checks/deadline-reminders`를 호출하면, 라벨에서 날짜를 추출해
+D-7/D-1/D-0 중 하나에 해당하는 자동화만 골라 Gmail SMTP(Nodemailer)로 실제 이메일을
+보냅니다. 이메일 발송 서비스로는 Resend를 먼저 검토했지만, 실제 수신자에게 보내려면 본인
+소유 도메인을 인증해야 한다는 걸 확인하고(포트폴리오 규모엔 배보다 배꼽) Gmail 앱 비밀번호
+방식으로 바꿨습니다. `sentReminderMilestones`에 이미 보낸 마일스톤을 기록해 매일 재실행돼도
+같은 알림이 중복 발송되지 않습니다.
+
 ---
 
 ## 4. 지금 뭐가 진짜로 동작하고, 뭐가 아직 시뮬레이션인가
@@ -142,7 +150,7 @@ NestJS(`AutomationsService.recheckMonitoringAutomations`) 안에서 일반 TypeS
 | 8단계 목표 입력 마법사 | ✅ 실제 동작 | localStorage 이어하기 지원 |
 | 플랜 저장 / 진행률 | ✅ 실제 동작 | 개별 단계 완료 플래그 기반(`completedStepIds`), 클릭으로 토글 가능 |
 | 자동화 연결 (문서 정리) | ✅ 실제 동작 | 정규식으로 단계 텍스트에서 서류명 추출 |
-| 자동화 연결 (마감일 리마인더) | ✅ 실제 동작 | 날짜 계산은 진짜, 알림 발송(이메일/푸시)은 아직 없음 |
+| 자동화 연결 (마감일 리마인더) | ✅ 실제 동작 | D-7/D-1/D-0에 Gmail SMTP로 실제 이메일 발송, n8n 스케줄 트리거 |
 | Saved 페이지 "자동화 연결됨" 표시 | ✅ 실제 동작 | Automations 테이블 실제 조회 |
 | AI 검색 그라운딩 (Tavily + Gemini) | ✅ 실제 동작 | 실제 채용 플랫폼 검색 결과로 actionUrl 생성, 위 3-3 참고 |
 | 채용/원격구인 지속 모니터링 | ✅ 실제 동작 | n8n 스케줄 트리거 → 백엔드가 재검색·매칭 계산, 위 3-4 참고 |
@@ -194,5 +202,5 @@ Loop 구조와 프론트엔드 코딩 규칙(map 렌더링, 컴포넌트 분리 
 
 1. 검색 도메인 필터를 두 버티컬 통합 목록이 아니라 국가별로 더 세분화, 비자 요건 등 채용 외
    정보도 그라운딩 확장
-2. 비자·체류 마감일 리마인더 — 날짜 계산 이후 실제 발송(이메일/푸시)까지 연결
-3. Saved/Automation 페이지를 좁혀진 2개 버티컬 기준으로 재디자인
+2. Saved/Automation 페이지를 좁혀진 2개 버티컬 기준으로 재디자인
+3. 푸시 알림(브라우저) — 지금은 이메일만, 앱을 안 열어도 도달하는 채널 추가

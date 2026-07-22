@@ -45,6 +45,13 @@ export class Automation {
   @Column({ type: 'simple-json', nullable: true })
   seenResultUrls: string[] | null;
 
+  // Only meaningful for the deadline-reminder flavor of a notification
+  // automation — tracks which milestones ('D-7'/'D-1'/'D-0') have already
+  // been emailed so the daily n8n-triggered check doesn't resend the same
+  // reminder.
+  @Column({ type: 'simple-json', nullable: true })
+  sentReminderMilestones: string[] | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

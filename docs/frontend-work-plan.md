@@ -98,14 +98,19 @@
       (`completedStepIds: string[]`)로 전환 — 기존 카운터는 애초에 UI에서 호출하는 곳이
       없어 항상 0에 고정돼 있던 죽은 기능이었음. `PATCH /saved-plans/steps/:stepId/toggle`
       추가로 실제 클릭 토글 UI까지 연결
+- [x] 비자·체류 마감일 리마인더 실제 발송 — n8n이 매일
+      `POST /internal/automation-checks/deadline-reminders` 호출 → 라벨에서 추출한 날짜가
+      D-7/D-1/D-0일 때 Gmail SMTP(Nodemailer)로 실제 이메일 발송. Resend를 먼저 검토했으나
+      실제 수신자 발송에 도메인 인증이 필요해 Gmail 앱 비밀번호 방식으로 전환. 실제 계정으로
+      라이브 발송 테스트 완료, `sentReminderMilestones`로 중복 발송 방지 확인함
 
 ### 미완료 — 다음 작업 후보
 - [ ] Saved/Automation 페이지를 좁혀진 2개 버티컬 기준으로 재디자인 — 현재도 범용적으로 잘
       동작하고 있어 긴급하지 않음
 - [ ] Automation 재검색 시 도메인 필터가 두 버티컬(해외취업/노마드) 통합 목록 하나로 고정됨 —
       국가별/버티컬별로 나누면 더 정밀해지겠지만 사소한 개선
-- [ ] 비자·체류 마감일 리마인더 — 날짜 계산 이후 실제 발송(이메일/푸시)까지 연결
 - [ ] Saved/Automation 페이지 스크린샷 — 로그인 세션이 필요해서 자동 캡처 못 함, 수동 필요
+- [ ] 푸시 알림(브라우저) — 지금은 이메일만, 앱을 안 열어도 도달하는 채널 추가
 
 ---
 

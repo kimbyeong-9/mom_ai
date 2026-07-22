@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AuthService } from '../auth/auth.service';
 import type { SearchProfile } from '../planning/entities/planning.entity';
 import {
   KOREAN_REGIONAL_EXCLUDE_DOMAINS,
@@ -10,6 +11,7 @@ import {
 import { TavilySearchService } from '../planning/tavily-search.service';
 import { SavedPlansService } from '../saved-plans/saved-plans.service';
 import { CreateAutomationDto } from './dto/create-automation.dto';
+import { EmailService } from './email.service';
 import { Automation } from './entities/automation.entity';
 
 const DOCUMENT_KEYWORD_MAP: Array<{ pattern: RegExp; document: string }> = [
@@ -43,6 +45,24 @@ function extractDeadlineDate(label: string): Date | null {
   const date = new Date(Number(year), Number(month) - 1, Number(day));
   return Number.isNaN(date.getTime()) ? null : date;
 }
+
+// Calendar-day difference, ignoring time-of-day — a deadline of "today" at
+// any hour should still count as the D-0 milestone.
+function daysUntil(target: Date): number {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfTarget = new Date(target);
+  startOfTarget.setHours(0, 0, 0, 0);
+  return Math.round(
+    (startOfTarget.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24),
+  );
+}
+
+const REMINDER_MILESTONES: Array<{ daysBefore: number; key: string }> = [
+  { daysBefore: 7, key: 'D-7' },
+  { daysBefore: 1, key: 'D-1' },
+  { daysBefore: 0, key: 'D-0' },
+];
 
 /** Prefers an English keyword query built from the user's actual wizard
  * answers over the step's own title text, which is often generic ("영문
@@ -80,6 +100,8 @@ export class AutomationsService {
     private readonly automationRepository: Repository<Automation>,
     private readonly savedPlansService: SavedPlansService,
     private readonly tavilySearchService: TavilySearchService,
+    private readonly authService: AuthService,
+    private readonly emailService: EmailService,
   ) {}
 
   async connect(userId: string, dto: CreateAutomationDto): Promise<Automation> {
@@ -182,6 +204,70 @@ export class AutomationsService {
     }
 
     return { checked: monitoring.length, updated };
+  }
+
+  /** Called by the n8n schedule trigger (once a day) — emails a reminder for
+   * every deadline-flavor notification automation that just hit a D-7/D-1/D-0
+   * milestone. Not user-scoped, same as recheckMonitoringAutomations. */
+  async sendDeadlineReminders(): Promise<{ checked: number; sent: number }> {
+    const candidates = await this.automationRepository.find({
+      where: { type: 'notification', status: 'succeeded' },
+    });
+    const deadlineAutomations = candidates
+      .map((automation) => ({
+        automation,
+        deadline: extractDeadlineDate(automation.label),
+      }))
+      .filter(
+        (entry): entry is { automation: Automation; deadline: Date } =>
+          entry.deadline !== null,
+      );
+
+    let sent = 0;
+    for (const { automation, deadline } of deadlineAutomations) {
+      const remaining = daysUntil(deadline);
+      const milestone = REMINDER_MILESTONES.find(
+        (m) => m.daysBefore === remaining,
+      );
+      if (!milestone) {
+        continue;
+      }
+
+      const alreadySent = automation.sentReminderMilestones ?? [];
+      if (alreadySent.includes(milestone.key)) {
+        continue;
+      }
+
+      try {
+        const user = await this.authService.findById(automation.userId);
+        if (!user?.email) {
+          this.logger.warn(
+            `리마인더 발송 건너뜀 — 이메일 없는 사용자 (automation id: ${automation.id})`,
+          );
+          continue;
+        }
+
+        const delivered = await this.emailService.send(
+          user.email,
+          `[LifeFlow AI] ${automation.label} — 마감 ${remaining}일 전이에요`,
+          `"${automation.label}" 준비 마감이 ${
+            remaining === 0 ? '오늘' : `${remaining}일 후`
+          }예요. 잊지 말고 챙겨주세요!`,
+        );
+        if (delivered) {
+          automation.sentReminderMilestones = [...alreadySent, milestone.key];
+          await this.automationRepository.save(automation);
+          sent += 1;
+        }
+      } catch (error) {
+        this.logger.error(
+          `리마인더 발송 실패 (automation id: ${automation.id})`,
+          error,
+        );
+      }
+    }
+
+    return { checked: deadlineAutomations.length, sent };
   }
 
   /** Mutates `automation` in place with fresh search results — caller saves. */

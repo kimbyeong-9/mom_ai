@@ -125,3 +125,19 @@ Automation Loop 전환율 개선
 - 비자·체류 마감일 리마인더는 `extractDeadlineDate`로 라벨에서 날짜를 추출해 계산하되, 아직
   실제 발송(이메일/푸시 등)은 붙이지 않았다 — 다음 확장 후보.
 - `document`(서류 정리) 타입은 원래 계획대로 n8n 없이 정규식 기반 로직 그대로 유지.
+
+### 개정 — 2026-07-22 (마감일 리마인더 실제 발송 구현)
+
+같은 "n8n은 스케줄러, 로직은 백엔드" 패턴을 재사용해 실제 발송까지 연결했다. n8n이 매일
+`POST /internal/automation-checks/deadline-reminders`를 호출하면, `AutomationsService`가
+D-7/D-1/D-0 중 하나에 해당하는 자동화를 찾아 이메일을 보낸다.
+
+이메일 발송 서비스는 처음 Resend를 검토했으나, **실제 수신자에게 보내려면 본인 소유 도메인을
+Resend에 등록·인증(DNS 설정)해야 한다**는 걸 확인했다 — `onboarding@resend.dev`로는 Resend가
+지정한 테스트 주소(`delivered@resend.dev` 등)에만 보낼 수 있다. 포트폴리오 규모(발송량 적음,
+실사용자는 개발자 본인)에서 도메인 구매·인증까지 가는 건 배보다 배꼽이라 판단해, 도메인 인증이
+필요 없는 **Gmail SMTP(Nodemailer + 앱 비밀번호)**로 전환했다.
+
+중복 발송 방지를 위해 `Automation.sentReminderMilestones: string[]`에 이미 보낸 마일스톤
+(`'D-7'`/`'D-1'`/`'D-0'`)을 기록한다. 실제 계정으로 라이브 발송 테스트 완료 — 첫 호출은
+`{checked: 1, sent: 1}`, 같은 자동화로 재호출 시 `{checked: 1, sent: 0}`으로 중복 방지 확인.
