@@ -8,10 +8,8 @@ import PlanningLoading from "@/features/planning/components/PlanningLoading";
 import SavedStepRow from "@/features/save/components/SavedStepRow";
 import { useSavedPlanDetail } from "@/features/save/hooks/useSavedPlanDetail";
 import { useToggleStepCompletion } from "@/features/save/hooks/useToggleStepCompletion";
-import { usePageTitle } from "@/layouts/usePageTitle";
 
 export default function SavedPlanDetailPage() {
-  usePageTitle("플랜 상세");
   const { id } = useParams<{ id: string }>();
   const { data: savedPlan, isLoading } = useSavedPlanDetail(id);
   const { data: automations } = useAutomations();
@@ -22,7 +20,7 @@ export default function SavedPlanDetailPage() {
 
   if (isLoading || !savedPlan) {
     return (
-      <div className="mx-auto max-w-2xl px-5 py-6 sm:px-11 sm:py-8">
+      <div className="relative mx-auto max-w-2xl px-5 py-6 sm:px-11 sm:py-8">
         <PlanningLoading />
       </div>
     );
@@ -49,7 +47,7 @@ export default function SavedPlanDetailPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 py-6 sm:gap-5 sm:px-11 sm:py-8">
+    <div className="relative mx-auto flex max-w-2xl flex-col gap-4 px-5 py-6 sm:gap-5 sm:px-11 sm:py-8">
       <div>
         <p className="text-xs font-bold text-[#1F3D2E]/45">{getGoalTypeLabel(savedPlan.goalType)}</p>
         <h1 className="mt-1 text-xl font-extrabold text-[#1F3D2E] sm:text-2xl">{savedPlan.title}</h1>

@@ -1,14 +1,12 @@
 import QueryErrorState from "@/components/QueryErrorState";
 import SavedPlanList from "@/features/save/components/SavedPlanList";
 import { useSavedPlans } from "@/features/save/hooks/useSavedPlans";
-import { usePageTitle } from "@/layouts/usePageTitle";
 
 export default function SavedPage() {
-  usePageTitle("나의 플랜");
   const { data: savedPlans, isLoading, isError, refetch } = useSavedPlans();
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
+    <div className="relative mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
       <div className="hidden sm:block">
         <h1 className="text-2xl font-extrabold text-[#1F3D2E]">나의 플랜</h1>
         <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">

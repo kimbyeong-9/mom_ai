@@ -3,10 +3,8 @@ import axios from "axios";
 import QueryErrorState from "@/components/QueryErrorState";
 import { LCP_ROWS, METRIC_ROWS } from "@/constants/metricDefinitions";
 import { MetricCard, useLoopMetrics } from "@/features/metrics";
-import { usePageTitle } from "@/layouts/usePageTitle";
 
 export default function MetricsPage() {
-  usePageTitle("지표");
   const { data: metrics, isLoading, isError, error, refetch } = useLoopMetrics();
 
   const errorMessage =
@@ -15,7 +13,7 @@ export default function MetricsPage() {
       : "지표를 불러오지 못했어요.";
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
+    <div className="relative mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
       <div className="hidden sm:block">
         <h1 className="text-2xl font-extrabold text-[#1F3D2E]">Loop 전환율 지표</h1>
         <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">

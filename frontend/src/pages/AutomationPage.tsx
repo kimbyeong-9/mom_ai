@@ -5,11 +5,9 @@ import AutomationList from "@/features/automation/components/AutomationList";
 import { useAutomations } from "@/features/automation/hooks/useAutomations";
 import { useExecuteAutomation } from "@/features/automation/hooks/useExecuteAutomation";
 import { formatAutomationResult } from "@/features/automation/utils/formatAutomationResult";
-import { usePageTitle } from "@/layouts/usePageTitle";
 import { useToastStore } from "@/store/toast.store";
 
 export default function AutomationPage() {
-  usePageTitle("AI 알림 비서");
   const { data: automations, isLoading, isError, refetch } = useAutomations();
   const executeAutomation = useExecuteAutomation();
   const showToast = useToastStore((state) => state.show);
@@ -39,7 +37,7 @@ export default function AutomationPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
+    <div className="relative mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
       <div className="hidden sm:block">
         <h1 className="text-2xl font-extrabold text-[#1F3D2E]">AI 알림 비서</h1>
         <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">

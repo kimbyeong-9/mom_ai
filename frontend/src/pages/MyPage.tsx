@@ -8,7 +8,6 @@ import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 import { useDeleteAccount } from "@/features/auth/hooks/useDeleteAccount";
 import { useAutomations } from "@/features/automation/hooks/useAutomations";
 import { useSavedPlans } from "@/features/save/hooks/useSavedPlans";
-import { usePageTitle } from "@/layouts/usePageTitle";
 import { formatDate } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -18,7 +17,6 @@ const PROVIDER_LABELS = {
 } as const;
 
 export default function MyPage() {
-  usePageTitle("마이페이지");
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
   const { data: profile, isLoading, isError, refetch } = useCurrentUser();
@@ -49,9 +47,7 @@ export default function MyPage() {
   };
 
   return (
-    <div className="relative overflow-hidden px-5 py-6 sm:px-11 sm:py-10">
-      <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-[#B7CBAE]/[0.18] sm:size-52" />
-
+    <div className="px-5 py-6 sm:px-11 sm:py-10">
       <div className="relative mx-auto flex max-w-2xl flex-col gap-5">
         <h1 className="hidden text-2xl font-extrabold text-[#1F3D2E] sm:block">마이페이지</h1>
 

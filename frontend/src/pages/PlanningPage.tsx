@@ -7,12 +7,10 @@ import PlanningResultCard from "@/features/planning/components/PlanningResultCar
 import { usePlanningResult } from "@/features/planning/hooks/usePlanningResult";
 import SavePlanConfirmModal from "@/features/save/components/SavePlanConfirmModal";
 import { useSavePlan } from "@/features/save/hooks/useSavePlan";
-import { usePageTitle } from "@/layouts/usePageTitle";
 import { trackEvent } from "@/lib/analytics";
 import { useAuthStore } from "@/store/auth.store";
 
 export default function PlanningPage() {
-  usePageTitle("플랜");
   const [searchParams] = useSearchParams();
   const planningId = searchParams.get("planningId");
   const tags = {
@@ -46,7 +44,7 @@ export default function PlanningPage() {
 
   if (!planningId) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-2 px-5 py-6 sm:px-11 sm:py-8">
+      <div className="relative mx-auto flex max-w-3xl flex-col gap-2 px-5 py-6 sm:px-11 sm:py-8">
         <h1 className="text-xl font-extrabold text-[#1F3D2E] sm:text-2xl">Planning</h1>
         <p className="text-[13px] text-[#1F3D2E]/55 sm:text-[13.5px]">
           아직 만든 플랜이 없어요.{" "}
@@ -59,7 +57,7 @@ export default function PlanningPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
+    <div className="relative mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
       {isLoading && (
         <PlanningLoading
           heading={

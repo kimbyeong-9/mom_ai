@@ -4,6 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 import LoginRequiredModal from "@/components/LoginRequiredModal";
 import VerticalSelectCard from "@/components/VerticalSelectCard";
 import { SERVICE_VERTICALS } from "@/constants/verticals";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
+import MobileBottomNav from "@/layouts/components/MobileBottomNav";
+import MobileTopNav from "@/layouts/components/MobileTopNav";
 import SidebarContent from "@/layouts/components/SidebarContent";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
@@ -18,6 +21,7 @@ export default function HomePage() {
   const location = useLocation();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const isNavHidden = useScrollDirection();
 
   return (
     <div className="flex min-h-screen bg-[#F5F1E6]">
@@ -56,8 +60,10 @@ export default function HomePage() {
         onClose={() => setAuthModalOpen(false)}
       />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between px-5 py-4 sm:px-10 sm:py-6">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        <MobileTopNav isHidden={isNavHidden} />
+
+        <header className="hidden items-center justify-between px-10 py-6 sm:flex">
           <div className="flex items-center gap-2">
             <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#1F3D2E]">
               <span className="text-[13px] font-bold text-white">L</span>
@@ -67,7 +73,7 @@ export default function HomePage() {
             </span>
           </div>
 
-          <nav className="hidden items-center gap-7 sm:flex">
+          <nav className="flex items-center gap-7">
             {SERVICE_VERTICALS.map((vertical) => (
               <Link
                 key={vertical.id}
@@ -80,13 +86,13 @@ export default function HomePage() {
             <span className={`text-sm font-semibold ${DISABLED_LINK_CLASSNAME}`}>자주 묻는 질문</span>
           </nav>
 
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
               <Link
                 to="/mypage"
-                className="flex h-8 items-center gap-1.5 rounded-full border border-[#1F3D2E]/15 bg-white py-0.5 pl-1 pr-3.5 text-xs font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 sm:h-10 sm:gap-2 sm:py-1 sm:pl-1.5 sm:pr-5 sm:text-sm"
+                className="flex h-10 items-center gap-2 rounded-full border border-[#1F3D2E]/15 bg-white py-1 pl-1.5 pr-5 text-sm font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5"
               >
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#1F3D2E] text-[10px] font-bold text-white sm:size-7 sm:text-xs">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#1F3D2E] text-xs font-bold text-white">
                   {user.name.slice(0, 1)}
                 </span>
                 {user.name}
@@ -94,7 +100,7 @@ export default function HomePage() {
             ) : (
               <Link
                 to="/login"
-                className="flex h-8 items-center justify-center rounded-full border border-[#1F3D2E]/15 bg-white px-4 text-xs font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 sm:h-10 sm:px-5 sm:text-sm"
+                className="flex h-10 items-center justify-center rounded-full border border-[#1F3D2E]/15 bg-white px-5 text-sm font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5"
               >
                 로그인
               </Link>
@@ -102,7 +108,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-8 sm:flex-row sm:gap-20 sm:px-10">
+        <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-8 pb-20 pt-[76px] sm:flex-row sm:gap-20 sm:px-10 sm:pb-8 sm:pt-8">
           <div className="flex w-full max-w-[420px] flex-col items-center gap-3 text-center sm:items-start sm:text-left">
             <h1 className="text-[26px] font-extrabold leading-snug text-[#1F3D2E] sm:text-[38px] sm:leading-[1.25]">
               어떤 방식이
@@ -137,6 +143,13 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
+
+      <MobileBottomNav
+        activePathname={location.pathname}
+        isAuthenticated={isAuthenticated}
+        onRequireAuth={() => setAuthModalOpen(true)}
+        isHidden={isNavHidden}
+      />
     </div>
   );
 }
