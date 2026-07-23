@@ -30,7 +30,7 @@ export default function GoalWizard({
       : Boolean(currentAnswer);
 
   return (
-    <div className="flex h-[820px] max-h-[92vh] overflow-hidden rounded-[20px] border-[1.5px] border-[#1F3D2E]/[0.08] bg-white shadow-[0_8px_24px_rgba(31,61,46,0.06)] sm:rounded-3xl">
+    <div className="flex h-[820px] max-h-[92vh] overflow-hidden sm:rounded-3xl sm:border-[1.5px] sm:border-[#1F3D2E]/[0.08] sm:bg-white sm:shadow-[0_8px_24px_rgba(31,61,46,0.06)]">
       <div className="flex min-h-0 flex-1 flex-col">
         {resumePrompt ? (
           <WizardResumePrompt
@@ -72,19 +72,28 @@ export default function GoalWizard({
                   }
                   value={currentAnswer as string | undefined}
                   onChange={(value) => setAnswer(currentStep.id, value)}
+                  grid={currentStep.id === "field"}
+                  otherText={
+                    currentStep.id === "field" ? (answers.fieldOther as string | undefined) : undefined
+                  }
+                  onOtherTextChange={
+                    currentStep.id === "field" ? (text) => setAnswer("fieldOther", text) : undefined
+                  }
                 />
               )}
             </div>
 
             <div className="flex shrink-0 gap-2.5 px-6 pb-6 sm:px-8 sm:pb-7">
-              <button
-                type="button"
-                onClick={goBack}
-                disabled={!canGoBack}
-                className="h-[50px] w-[100px] shrink-0 rounded-2xl border-[1.5px] border-[#1F3D2E]/15 bg-white text-sm font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 disabled:opacity-40"
-              >
-                이전
-              </button>
+              {currentStep.type !== "country-multi-select" && (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  disabled={!canGoBack}
+                  className="h-[50px] w-[100px] shrink-0 rounded-2xl border-[1.5px] border-[#1F3D2E]/15 bg-white text-sm font-semibold text-[#1F3D2E] transition-colors hover:bg-[#1F3D2E]/5 disabled:opacity-40"
+                >
+                  이전
+                </button>
+              )}
               <button
                 type="button"
                 onClick={goNext}

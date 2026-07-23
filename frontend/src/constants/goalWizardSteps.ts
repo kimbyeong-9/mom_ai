@@ -88,7 +88,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "tech-pm", label: "테크니컬 프로덕트 매니저" },
     { value: "it-pm", label: "IT 프로젝트 매니저" },
     { value: "architect", label: "솔루션 아키텍트" },
-    { value: "other-it", label: "기타 IT·개발", muted: true },
   ],
   design: [
     { value: "ux", label: "UX 디자이너" },
@@ -102,7 +101,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "interior", label: "인테리어 디자이너" },
     { value: "fashion", label: "패션 디자이너" },
     { value: "web-design", label: "웹 디자이너" },
-    { value: "other-design", label: "기타 디자인", muted: true },
   ],
   marketing: [
     { value: "digital-marketing", label: "디지털 마케터" },
@@ -115,7 +113,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "pr-comms", label: "PR·커뮤니케이션 매니저" },
     { value: "email-marketing", label: "이메일 마케팅 전문가" },
     { value: "marketing-analyst", label: "마케팅 애널리스트" },
-    { value: "other-marketing", label: "기타 마케팅", muted: true },
   ],
   "support-ops": [
     { value: "customer-support", label: "고객지원 상담원" },
@@ -124,7 +121,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "callcenter-manager", label: "콜센터 매니저" },
     { value: "operations-manager", label: "운영 매니저" },
     { value: "community-manager", label: "커뮤니티 매니저" },
-    { value: "other-support", label: "기타 고객지원·운영", muted: true },
   ],
   sales: [
     { value: "sales-rep", label: "영업 대표" },
@@ -134,7 +130,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "retail-sales", label: "리테일 세일즈" },
     { value: "inside-sales", label: "인사이드 세일즈" },
     { value: "partnership-manager", label: "파트너십 매니저" },
-    { value: "other-sales", label: "기타 영업·세일즈", muted: true },
   ],
   "finance-accounting": [
     { value: "accountant", label: "회계사" },
@@ -145,7 +140,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "investment-analyst", label: "투자 분석가" },
     { value: "payroll", label: "페이롤 전문가" },
     { value: "risk-management", label: "리스크 관리 담당자" },
-    { value: "other-finance", label: "기타 회계·재무", muted: true },
   ],
   hr: [
     { value: "hr-generalist", label: "HR 제너럴리스트" },
@@ -154,7 +148,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "comp-benefits", label: "급여·복지 담당" },
     { value: "lnd", label: "조직문화·교육 담당 (L&D)" },
     { value: "general-affairs", label: "총무" },
-    { value: "other-hr", label: "기타 인사·총무", muted: true },
   ],
   engineering: [
     { value: "mechanical", label: "기계 엔지니어" },
@@ -166,7 +159,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "automotive", label: "자동차 엔지니어" },
     { value: "environmental", label: "환경 엔지니어" },
     { value: "quality-eng", label: "품질(QC) 엔지니어" },
-    { value: "other-engineering", label: "기타 엔지니어링", muted: true },
   ],
   hospitality: [
     { value: "chef", label: "셰프·조리사" },
@@ -177,7 +169,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "housekeeping", label: "하우스키핑" },
     { value: "restaurant-manager", label: "레스토랑 매니저" },
     { value: "event-catering", label: "이벤트·케이터링 스태프" },
-    { value: "other-hospitality", label: "기타 요식업·숙박", muted: true },
   ],
   logistics: [
     { value: "factory-worker", label: "생산직·공장 근로자" },
@@ -186,7 +177,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "supply-chain", label: "공급망 관리자" },
     { value: "qc", label: "품질관리(QC)" },
     { value: "delivery-driver", label: "배송·운전" },
-    { value: "other-logistics", label: "기타 생산·물류", muted: true },
   ],
   education: [
     { value: "language-teacher", label: "어학강사 (ESL 등)" },
@@ -195,7 +185,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "tutor", label: "튜터·과외" },
     { value: "curriculum-dev", label: "교육 콘텐츠 개발자" },
     { value: "special-education", label: "특수교육 교사" },
-    { value: "other-education", label: "기타 교육", muted: true },
   ],
   healthcare: [
     { value: "nurse", label: "간호사" },
@@ -205,7 +194,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "care-worker", label: "요양보호사" },
     { value: "dental-hygienist", label: "치과위생사" },
     { value: "medical-technician", label: "의료기술자" },
-    { value: "other-healthcare", label: "기타 의료·헬스케어", muted: true },
   ],
   legal: [
     { value: "lawyer", label: "변호사" },
@@ -214,7 +202,6 @@ export const FIELD_SUBROLES: Record<string, readonly WizardOption[]> = {
     { value: "strategy-consultant", label: "전략 컨설턴트" },
     { value: "it-consultant", label: "IT 컨설턴트" },
     { value: "patent-specialist", label: "특허 전문가" },
-    { value: "other-legal", label: "기타 법률·컨설팅", muted: true },
   ],
   // Nomad-only leaf categories that aren't in ABROAD_FIELD_OPTIONS.
   translation: [

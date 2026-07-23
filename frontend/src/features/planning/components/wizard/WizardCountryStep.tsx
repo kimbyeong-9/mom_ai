@@ -1,8 +1,7 @@
 import { useState } from "react";
 
-import { COUNTRIES, POPULAR_COUNTRY_CODES } from "@/constants/countries";
-
-const UNDECIDED = "undecided";
+import { COUNTRIES, COUNTRIES_BY_REGION } from "@/constants/countries";
+import WizardCountryButton from "./WizardCountryButton";
 
 type WizardCountryStepProps = {
   title: string;
@@ -23,11 +22,7 @@ export default function WizardCountryStep({
   singleSelect = false,
 }: WizardCountryStepProps) {
   const [query, setQuery] = useState("");
-  const isUndecided = value.includes(UNDECIDED);
 
-  const popularCountries = POPULAR_COUNTRY_CODES.map(
-    (code) => COUNTRIES.find((country) => country.code === code)!,
-  );
   const searchResults =
     query.trim().length > 0
       ? COUNTRIES.filter((country) => country.name.includes(query.trim())).slice(0, 8)
@@ -38,12 +33,7 @@ export default function WizardCountryStep({
       onChange(value.includes(code) ? [] : [code]);
       return;
     }
-    const next = value.includes(code) ? value.filter((c) => c !== code) : [...value, code];
-    onChange(next.filter((c) => c !== UNDECIDED));
-  };
-
-  const toggleUndecided = () => {
-    onChange(isUndecided ? [] : [UNDECIDED]);
+    onChange(value.includes(code) ? value.filter((c) => c !== code) : [...value, code]);
   };
 
   return (
@@ -60,25 +50,23 @@ export default function WizardCountryStep({
           )}
         </div>
 
-        {value.filter((c) => c !== UNDECIDED).length > 0 && (
+        {value.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {value
-              .filter((c) => c !== UNDECIDED)
-              .map((code) => {
-                const country = COUNTRIES.find((c) => c.code === code);
-                if (!country) return null;
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => toggleCountry(code)}
-                    className="flex items-center gap-1.5 rounded-full bg-[#1F3D2E] px-3 py-1.5 text-xs font-semibold text-white"
-                  >
-                    {country.flag} {country.name}
-                    <span aria-hidden="true">×</span>
-                  </button>
-                );
-              })}
+            {value.map((code) => {
+              const country = COUNTRIES.find((c) => c.code === code);
+              if (!country) return null;
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => toggleCountry(code)}
+                  className="flex items-center gap-1.5 rounded-full bg-[#1F3D2E] px-3 py-1.5 text-xs font-semibold text-white"
+                >
+                  {country.flag} {country.name}
+                  <span aria-hidden="true">×</span>
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -86,57 +74,47 @@ export default function WizardCountryStep({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="다른 국가를 검색해보세요 (예: 프랑스)"
-          disabled={isUndecided}
-          className="rounded-2xl border-[1.5px] border-[#1F3D2E]/[0.12] bg-white px-4 py-3 text-sm text-[#1F3D2E] placeholder:text-[#1F3D2E]/35 focus:border-[#1F3D2E]/40 focus:outline-none disabled:opacity-40"
+          className="rounded-2xl border-[1.5px] border-[#1F3D2E]/[0.12] bg-white px-4 py-3 text-sm text-[#1F3D2E] placeholder:text-[#1F3D2E]/35 focus:border-[#1F3D2E]/40 focus:outline-none"
         />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_24px,black_calc(100%-24px),transparent)] [mask-image:linear-gradient(to_bottom,transparent,black_24px,black_calc(100%-24px),transparent)]">
         {searchResults.length > 0 ? (
-          <div className="flex flex-col gap-2 pb-1">
+          <div className="grid grid-cols-2 gap-2 pb-5 pt-5 sm:grid-cols-4">
             {searchResults.map((country) => (
-              <button
+              <WizardCountryButton
                 key={country.code}
-                type="button"
+                flag={country.flag}
+                name={country.name}
+                isSelected={value.includes(country.code)}
                 onClick={() => toggleCountry(country.code)}
-                className={`rounded-2xl border-[1.5px] px-4 py-3 text-left text-sm font-bold transition-colors ${
-                  value.includes(country.code)
-                    ? "border-[#1F3D2E] bg-[#B7CBAE]/[0.18] text-[#1F3D2E]"
-                    : "border-[#1F3D2E]/[0.12] bg-white text-[#1F3D2E] hover:border-[#1F3D2E]/25"
-                }`}
-              >
-                {country.flag} {country.name}
-              </button>
+              />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 pb-1">
-            {popularCountries.map((country) => (
-              <button
-                key={country.code}
-                type="button"
-                onClick={() => toggleCountry(country.code)}
-                disabled={isUndecided}
-                className={`rounded-2xl border-[1.5px] px-4 py-4 text-left text-sm font-bold transition-colors disabled:opacity-40 ${
-                  value.includes(country.code)
-                    ? "border-[#1F3D2E] bg-[#B7CBAE]/[0.18] text-[#1F3D2E]"
-                    : "border-[#1F3D2E]/[0.12] bg-white text-[#1F3D2E] hover:border-[#1F3D2E]/25"
-                }`}
-              >
-                {country.flag} {country.name}
-              </button>
+          // Grouped by subregion on both breakpoints — mobile shows a
+          // 2-column grid, desktop shows a 4-column grid. pt-5/pb-5 keep the
+          // first heading and last row clear of the top/bottom fade mask
+          // (which always covers the container's top and bottom 24px).
+          <div className="flex flex-col gap-5 pb-5 pt-5">
+            {COUNTRIES_BY_REGION.map(({ region, countries }) => (
+              <div key={region}>
+                <h3 className="mb-2 text-xs font-bold tracking-wide text-[#1F3D2E]/45">
+                  {region}
+                </h3>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
+                  {countries.map((country) => (
+                    <WizardCountryButton
+                      key={country.code}
+                      flag={country.flag}
+                      name={country.name}
+                      isSelected={value.includes(country.code)}
+                      onClick={() => toggleCountry(country.code)}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
-            <button
-              type="button"
-              onClick={toggleUndecided}
-              className={`rounded-2xl border-[1.5px] px-4 py-4 text-left text-sm font-bold transition-colors ${
-                isUndecided
-                  ? "border-[#1F3D2E] bg-[#B7CBAE]/[0.18] text-[#1F3D2E]"
-                  : "border-[#1F3D2E]/[0.12] bg-white text-[#1F3D2E]/40 hover:border-[#1F3D2E]/25"
-              }`}
-            >
-              아직 안정했어요
-            </button>
           </div>
         )}
       </div>

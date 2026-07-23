@@ -13,7 +13,6 @@ import type { SearchProfile } from "../types/planning.types";
 import { useSubmitGoal } from "./useSubmitGoal";
 
 const STORAGE_KEY = "lifeflow_goal_wizard_progress";
-const UNDECIDED = "undecided";
 
 export type WizardAnswers = Record<string, string | string[]>;
 
@@ -44,11 +43,13 @@ function clearStoredProgress() {
 }
 
 // "specificRole" only means something when field !== "other" (see
-// GOAL_WIZARD_STEPS' specificRole step, skipped entirely otherwise) — this
-// keeps a stale leftover answer from a since-changed field choice from
-// leaking into goalText/profile.
+// GOAL_WIZARD_STEPS' specificRole step, skipped entirely otherwise) — when
+// field IS "other", the free-text "fieldOther" answer (typed into the
+// reveal-in input on the field step) takes its place instead.
 export function getSpecificRoleLabel(answers: WizardAnswers): string | null {
-  if (answers.field === "other") return null;
+  if (answers.field === "other") {
+    return (answers.fieldOther as string | undefined)?.trim() || null;
+  }
   return findWizardOptionLabel("specificRole", answers.specificRole as string);
 }
 
@@ -56,14 +57,14 @@ export function getSpecificRoleLabel(answers: WizardAnswers): string | null {
 // English search query (search-query.util.ts on the backend), never shown
 // on screen.
 export function getSpecificRoleValue(answers: WizardAnswers): string | null {
-  if (answers.field === "other") return null;
+  if (answers.field === "other") {
+    return (answers.fieldOther as string | undefined)?.trim() || null;
+  }
   return (answers.specificRole as string | undefined) ?? null;
 }
 
 function composeGoalText(answers: WizardAnswers): string {
-  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
-    (code) => code !== UNDECIDED,
-  );
+  const countryCodes = (answers.countries as string[] | undefined) ?? [];
   const countryNames = countryCodes
     .map((code) => COUNTRIES.find((c) => c.code === code)?.name ?? code)
     .join(", ");
@@ -92,9 +93,7 @@ function composeGoalText(answers: WizardAnswers): string {
 // buildResultTags below is for on-screen display and mixes in flags/emoji/
 // suffixes that don't belong in a search query.
 function buildSearchProfile(answers: WizardAnswers): SearchProfile {
-  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
-    (code) => code !== UNDECIDED,
-  );
+  const countryCodes = (answers.countries as string[] | undefined) ?? [];
   return {
     countries: countryCodes.map((code) => COUNTRIES.find((c) => c.code === code)?.name ?? code),
     field:
@@ -111,9 +110,7 @@ function buildSearchProfile(answers: WizardAnswers): SearchProfile {
 }
 
 function resumeContextLabel(answers: WizardAnswers): string {
-  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
-    (code) => code !== UNDECIDED,
-  );
+  const countryCodes = (answers.countries as string[] | undefined) ?? [];
   const firstCountry = COUNTRIES.find((c) => c.code === countryCodes[0]);
   return firstCountry ? `${firstCountry.name} 준비` : "지난번 답변";
 }
@@ -123,9 +120,7 @@ function resumeContextLabel(answers: WizardAnswers): string {
 export function buildResultTags(answers: WizardAnswers): Record<string, string> {
   const tags: Record<string, string> = {};
 
-  const countryCodes = ((answers.countries as string[] | undefined) ?? []).filter(
-    (code) => code !== UNDECIDED,
-  );
+  const countryCodes = (answers.countries as string[] | undefined) ?? [];
   const firstCountry = COUNTRIES.find((c) => c.code === countryCodes[0]);
   if (firstCountry) {
     tags.country = `${firstCountry.flag} ${firstCountry.name}`;
@@ -152,8 +147,12 @@ export function buildResultTags(answers: WizardAnswers): Record<string, string> 
 // (see getInitialWizardState) — the homepage's two cards ARE this question,
 // so asking it again inside the wizard would be a literal repeat. Only the
 // "잘 모르겠어요" fallback entry (no vertical param) needs to ask it for real.
-// "specificRole" is skipped whenever field === "other" — nothing to narrow
-// down there.
+//
+// "specificRole" is filtered out whenever field === "other" — there really
+// is no detailed sub-role to choose there (the "기타" free-text field on the
+// field step replaces it instead), so it correctly shrinks totalSteps
+// (e.g. "2/8" → "2/7") rather than counting a question that will never be
+// asked.
 export function getEffectiveSteps(
   answers: WizardAnswers,
   skipGoalForm: boolean,

@@ -43,8 +43,18 @@ describe("getEffectiveSteps", () => {
 });
 
 describe("getSpecificRoleLabel / getSpecificRoleValue", () => {
-  it("returns null when field is 'other', even if a stale specificRole answer is present", () => {
-    const answers: WizardAnswers = { field: "other", specificRole: "backend" };
+  it("falls back to the free-text 'fieldOther' answer when field is 'other', ignoring any stale specificRole answer", () => {
+    const answers: WizardAnswers = {
+      field: "other",
+      specificRole: "backend",
+      fieldOther: "그래픽 노블 편집자",
+    };
+    expect(getSpecificRoleLabel(answers)).toBe("그래픽 노블 편집자");
+    expect(getSpecificRoleValue(answers)).toBe("그래픽 노블 편집자");
+  });
+
+  it("returns null when field is 'other' and no free text has been typed yet", () => {
+    const answers: WizardAnswers = { field: "other" };
     expect(getSpecificRoleLabel(answers)).toBeNull();
     expect(getSpecificRoleValue(answers)).toBeNull();
   });
