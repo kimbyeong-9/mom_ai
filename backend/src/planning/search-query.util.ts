@@ -44,6 +44,24 @@ const WORK_STYLE_VALUE_EN: Record<string, string> = {
   onsite: 'on-site',
 };
 
+// Partial on purpose — only wizard option ids with a real, common English
+// job-posting phrase get a term. "soon"/"later"/"undecided" don't map to
+// anything real job platforms actually say, so adding a term for them would
+// just narrow the search without improving relevance (same reasoning as
+// languageValue being left out of the query entirely — see SearchProfile's
+// doc comment in entities/planning.entity.ts).
+const TIMELINE_VALUE_EN: Partial<Record<string, string>> = {
+  urgent: 'urgently hiring immediate start',
+};
+
+// "none"/"pr-citizen" are also intentionally absent: "none" is too early to
+// search on (still checking), and PR/citizenship holders don't need a visa
+// modifier at all — searching without one is already correct for them.
+const VISA_STATUS_VALUE_EN: Partial<Record<string, string>> = {
+  'need-sponsor': 'visa sponsorship',
+  'working-holiday-eligible': 'working holiday visa',
+};
+
 /** Returns null when the profile lacks the raw *Value/*Codes fields (e.g.
  * older saved data from before this feature), so callers can fall back to
  * their existing Korean-label-based query. */
@@ -64,12 +82,20 @@ export function buildEnglishJobQuery(
   const workStyleTerm = profile.workStyleValue
     ? WORK_STYLE_VALUE_EN[profile.workStyleValue]
     : null;
+  const timelineTerm = profile.timelineValue
+    ? TIMELINE_VALUE_EN[profile.timelineValue]
+    : null;
+  const visaStatusTerm = profile.visaStatusValue
+    ? VISA_STATUS_VALUE_EN[profile.visaStatusValue]
+    : null;
 
   const terms = [
     ...countryTerms,
     fieldTerm,
     experienceTerm,
     workStyleTerm,
+    visaStatusTerm,
+    timelineTerm,
     'jobs hiring',
   ].filter((part): part is string => Boolean(part));
 

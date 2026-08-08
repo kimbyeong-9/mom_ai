@@ -10,6 +10,8 @@ export type SavedPlanSummary = {
   totalSteps: number;
   automationConnected: boolean;
   automationConnectedAt: string | null;
+  countries: string[];
+  field: string | null;
 };
 
 export type SavedPlanDetail = SavedPlanSummary & {

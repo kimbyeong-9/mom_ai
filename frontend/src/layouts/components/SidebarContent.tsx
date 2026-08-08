@@ -1,5 +1,6 @@
 import { NAV_ITEMS } from "@/constants/navigation";
 import { isPathActive } from "../isPathActive";
+import SidebarNavDropdown from "./SidebarNavDropdown";
 import SidebarNavItem from "./SidebarNavItem";
 
 type SidebarContentProps = {
@@ -26,21 +27,38 @@ export default function SidebarContent({
         </span>
       </div>
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map((item) => (
-          <SidebarNavItem
-            key={item.id}
-            to={item.path}
-            label={item.label}
-            icon={item.icon}
-            iconBg={item.iconBg}
-            iconColor={item.iconColor}
-            isActive={isPathActive(activePathname, item.path)}
-            requiresAuth={item.requiresAuth}
-            isAuthenticated={isAuthenticated}
-            onRequireAuth={onRequireAuth}
-            onNavigate={onNavigate}
-          />
-        ))}
+        {NAV_ITEMS.map((item) =>
+          // "나의 플랜"만 데스크톱에서 드롭다운(해외 취업/디지털 노마드)으로
+          // 펼쳐진다 — 나머지는 그대로 단일 링크.
+          item.id === "saved" ? (
+            <SidebarNavDropdown
+              key={item.id}
+              label={item.label}
+              icon={item.icon}
+              iconBg={item.iconBg}
+              iconColor={item.iconColor}
+              basePath={item.path}
+              activePathname={activePathname}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={onRequireAuth}
+              onNavigate={onNavigate}
+            />
+          ) : (
+            <SidebarNavItem
+              key={item.id}
+              to={item.path}
+              label={item.label}
+              icon={item.icon}
+              iconBg={item.iconBg}
+              iconColor={item.iconColor}
+              isActive={isPathActive(activePathname, item.path)}
+              requiresAuth={item.requiresAuth}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={onRequireAuth}
+              onNavigate={onNavigate}
+            />
+          ),
+        )}
       </nav>
     </div>
   );

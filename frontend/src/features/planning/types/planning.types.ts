@@ -9,6 +9,9 @@ export type SearchProfile = {
   fieldValue?: string;
   experienceValue?: string;
   workStyleValue?: string;
+  timelineValue?: string;
+  visaStatusValue?: string;
+  languageValue?: string;
 };
 
 export type GoalInput = {

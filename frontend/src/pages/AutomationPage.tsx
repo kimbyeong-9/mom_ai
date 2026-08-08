@@ -38,12 +38,7 @@ export default function AutomationPage() {
 
   return (
     <div className="relative mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
-      <div className="hidden sm:block">
-        <h1 className="text-2xl font-extrabold text-[#1F3D2E]">AI 알림 비서</h1>
-        <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">
-          저장된 플랜과 연결된 자동화를 확인하고 실행하세요.
-        </p>
-      </div>
+      <h1 className="mb-6 text-xl font-extrabold text-[#1F3D2E] sm:text-2xl">AI 알림 비서</h1>
 
       {isLoading && <p className="text-[13px] text-[#1F3D2E]/50">불러오는 중...</p>}
       {isError && (

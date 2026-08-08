@@ -14,12 +14,7 @@ export default function MetricsPage() {
 
   return (
     <div className="relative mx-auto flex max-w-3xl flex-col gap-4 px-5 py-6 sm:gap-[18px] sm:px-11 sm:py-8">
-      <div className="hidden sm:block">
-        <h1 className="text-2xl font-extrabold text-[#1F3D2E]">Loop 전환율 지표</h1>
-        <p className="mt-1 text-[13.5px] text-[#1F3D2E]/55">
-          실제 이벤트 데이터를 기반으로 계산한 Planning / Save / Automation Loop 전환율이에요.
-        </p>
-      </div>
+      <h1 className="mb-6 text-xl font-extrabold text-[#1F3D2E] sm:text-2xl">Loop 전환율 지표</h1>
 
       {isLoading && <p className="text-[13px] text-[#1F3D2E]/50">불러오는 중...</p>}
       {isError && <QueryErrorState message={errorMessage} onRetry={() => refetch()} />}

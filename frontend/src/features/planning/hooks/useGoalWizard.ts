@@ -106,6 +106,9 @@ function buildSearchProfile(answers: WizardAnswers): SearchProfile {
     fieldValue: getSpecificRoleValue(answers) ?? (answers.field as string | undefined),
     experienceValue: answers.experience as string | undefined,
     workStyleValue: answers.workStyle as string | undefined,
+    timelineValue: answers.timeline as string | undefined,
+    visaStatusValue: answers.visaStatus as string | undefined,
+    languageValue: answers.language as string | undefined,
   };
 }
 

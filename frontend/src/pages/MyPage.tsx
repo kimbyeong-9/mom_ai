@@ -49,7 +49,7 @@ export default function MyPage() {
   return (
     <div className="px-5 py-6 sm:px-11 sm:py-10">
       <div className="relative mx-auto flex max-w-2xl flex-col gap-5">
-        <h1 className="hidden text-2xl font-extrabold text-[#1F3D2E] sm:block">마이페이지</h1>
+        <h1 className="text-xl font-extrabold text-[#1F3D2E] sm:text-2xl">마이페이지</h1>
 
         {isLoading && <p className="text-[13px] text-[#1F3D2E]/50">불러오는 중...</p>}
         {isError && (

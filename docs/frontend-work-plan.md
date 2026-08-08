@@ -104,22 +104,25 @@
       실제 수신자 발송에 도메인 인증이 필요해 Gmail 앱 비밀번호 방식으로 전환. 실제 계정으로
       라이브 발송 테스트 완료, `sentReminderMilestones`로 중복 발송 방지 확인함
 
+### 완료 (2026-07-27 기준)
+- [x] **검색 쿼리에 타임라인/비자상태 반영** — `SearchProfile` 타입(백엔드
+      `entities/planning.entity.ts`, 프론트 `types/planning.types.ts`)과 `CreatePlanningDto`
+      (`dto/create-planning.dto.ts` — `ValidationPipe`가 `whitelist: true`라 여기 안 넣으면
+      새 필드가 조용히 잘려나갔을 것)에 `timelineValue`/`visaStatusValue`/`languageValue` 추가.
+      프론트 `buildSearchProfile`(`useGoalWizard.ts`)이 이 값들을 실어 보내도록 확장.
+      백엔드 `buildEnglishJobQuery`(`search-query.util.ts`)에 `TIMELINE_VALUE_EN`/
+      `VISA_STATUS_VALUE_EN` 매핑 테이블 추가 — 단 **의도적으로 일부만 매핑**함: "urgent"→
+      "urgently hiring immediate start", "need-sponsor"→"visa sponsorship",
+      "working-holiday-eligible"→"working holiday visa"만 실제 채용 플랫폼에서 쓰이는
+      문구라 반영했고, "soon"/"later"/"undecided"/"none"/"pr-citizen"은 대응하는 실제
+      검색어가 없어 제외함 (억지로 넣으면 정확도만 떨어짐). **languageValue는 타입에만
+      추가하고 검색어엔 절대 반영 안 함** — 언어 수준을 태그하는 공통 영어 키워드가 채용
+      공고에 실제로 안 쓰여서, 넣으면 관련 결과를 놓치기만 함. `goalForm`(정규직/노마드/워홀)은
+      `JOB_PLATFORM_DOMAINS` 도메인 선택으로 이미 간접 반영 중이라 그대로 둠.
+      테스트 6개 추가(`search-query.util.spec.ts`), 매핑 로직 임시 제거 후 테스트 실패 확인 →
+      복구해서 실제로 회귀를 잡아내는지 검증함.
+
 ### 미완료 — 다음 작업 후보
-- [ ] **검색 쿼리에 타임라인/비자상태/언어/목표형태 반영 (2026-07-24 요청, 최우선)** — 위저드는
-      8개 답변(목표형태·국가·직군/구체직무·경력·타임라인·비자상태·언어·근무형태)을 받지만,
-      실제 웹 검색(Tavily)에 쓰이는 `buildEnglishJobQuery`(`backend/src/planning/search-query.util.ts`)는
-      그중 **국가/직군(구체직무)/경력/근무형태 4개만** 반영한다. 나머지 4개(목표형태·타임라인·
-      비자상태·언어)는 Gemini 프롬프트용 `goalText`(`frontend/src/features/planning/hooks/useGoalWizard.ts`의
-      `composeGoalText`)에는 들어가서 플랜 문구 작성엔 참고되지만, **실제 검색 결과 자체엔 영향을
-      못 준다** — "자세하고 정확한 정보 전달"이 목표이므로 검색어 구성에도 반영해야 함.
-      - `SearchProfile` 타입(`backend/src/planning/entities/planning.entity.ts:28-37`)에 아직
-        timeline/visaStatus/language/goalForm에 대응하는 raw value 필드가 없음 → 타입 확장 필요
-      - 프론트 `buildSearchProfile`(`useGoalWizard.ts`)도 이 4개 값을 실어 보내도록 확장 필요
-      - 백엔드 `buildEnglishJobQuery`(`search-query.util.ts`)에 영어 매핑 테이블 추가해서 검색어에
-        포함 — 기존 `EXPERIENCE_VALUE_EN`/`WORK_STYLE_VALUE_EN` 패턴 참고 (예: 비자 스폰서 필요 →
-        "visa sponsorship", 급함 타임라인 → "immediate hiring" 등)
-      - goalForm(정규직/노마드/워홀)은 검색어보다는 `JOB_PLATFORM_DOMAINS` 도메인 선택 등 이미
-        `planning-ai.service.ts`에서 간접 반영 중이라, 우선순위는 timeline·visaStatus·language 3개
 - [ ] Saved/Automation 페이지를 좁혀진 2개 버티컬 기준으로 재디자인 — 현재도 범용적으로 잘
       동작하고 있어 긴급하지 않음
 - [ ] Automation 재검색 시 도메인 필터가 두 버티컬(해외취업/노마드) 통합 목록 하나로 고정됨 —

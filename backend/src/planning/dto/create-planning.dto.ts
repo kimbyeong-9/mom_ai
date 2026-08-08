@@ -43,6 +43,18 @@ class SearchProfileDto {
   @IsOptional()
   @IsString()
   workStyleValue?: string;
+
+  @IsOptional()
+  @IsString()
+  timelineValue?: string;
+
+  @IsOptional()
+  @IsString()
+  visaStatusValue?: string;
+
+  @IsOptional()
+  @IsString()
+  languageValue?: string;
 }
 
 export class CreatePlanningDto {

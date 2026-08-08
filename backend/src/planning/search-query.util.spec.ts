@@ -78,6 +78,76 @@ describe('buildEnglishJobQuery', () => {
     const profile: SearchProfile = { countries: [], countryCodes: ['AU'] };
     expect(buildEnglishJobQuery(profile)).toBe('Australia jobs hiring');
   });
+
+  // Regression coverage for the 2026-07-27 request: timeline/visaStatus/
+  // language are collected by the wizard but weren't reaching the real
+  // search query, only the Gemini prompt text — so answering them had no
+  // effect on which listings actually got found.
+  it('adds a visa-sponsorship term when visaStatusValue is "need-sponsor"', () => {
+    const profile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      visaStatusValue: 'need-sponsor',
+    };
+    expect(buildEnglishJobQuery(profile)).toBe(
+      'Australia visa sponsorship jobs hiring',
+    );
+  });
+
+  it('adds a working-holiday-visa term when visaStatusValue is "working-holiday-eligible"', () => {
+    const profile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      visaStatusValue: 'working-holiday-eligible',
+    };
+    expect(buildEnglishJobQuery(profile)).toBe(
+      'Australia working holiday visa jobs hiring',
+    );
+  });
+
+  it('adds no visa term for "none" or "pr-citizen" — too early to search on, or no modifier needed', () => {
+    const noneProfile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      visaStatusValue: 'none',
+    };
+    const prCitizenProfile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      visaStatusValue: 'pr-citizen',
+    };
+    expect(buildEnglishJobQuery(noneProfile)).toBe('Australia jobs hiring');
+    expect(buildEnglishJobQuery(prCitizenProfile)).toBe('Australia jobs hiring');
+  });
+
+  it('adds an urgent-hiring term when timelineValue is "urgent"', () => {
+    const profile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      timelineValue: 'urgent',
+    };
+    expect(buildEnglishJobQuery(profile)).toBe(
+      'Australia urgently hiring immediate start jobs hiring',
+    );
+  });
+
+  it('adds no timeline term for "soon", "later", or "undecided" — no real job-posting phrase maps to them', () => {
+    const profile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      timelineValue: 'soon',
+    };
+    expect(buildEnglishJobQuery(profile)).toBe('Australia jobs hiring');
+  });
+
+  it('never adds a term for languageValue — no reliable English keyword real job postings use for it', () => {
+    const profile: SearchProfile = {
+      countries: [],
+      countryCodes: ['AU'],
+      languageValue: 'business',
+    };
+    expect(buildEnglishJobQuery(profile)).toBe('Australia jobs hiring');
+  });
 });
 
 describe('KOREAN_REGIONAL_EXCLUDE_DOMAINS', () => {

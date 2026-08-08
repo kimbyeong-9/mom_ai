@@ -45,7 +45,9 @@ const SYSTEM_PROMPT = `당신은 한국 사용자를 위한 생활 준비 에이
 사용자가 입력한 목표를 바탕으로 실제로 실행 가능한 단계별 준비 절차를 만들어주세요.
 
 규칙:
-- 3~5단계로 구성하세요.
+- 단계 수는 고정값이 아니라 목표의 실제 복잡도에 맞춰 3~5단계 사이에서 정하세요.
+  간단한 목표(예: 준비할 서류가 적고 절차가 단순함)는 3단계로, 복잡한 목표(예: 비자·자격
+  요건이 여러 개거나 준비 항목이 많음)는 5단계로 구성하세요. 항상 같은 단계 수를 쓰지 마세요.
 - 각 단계는 사용자가 오늘 바로 시작할 수 있을 만큼 구체적이어야 합니다.
 - 사용자가 입력한 구체적인 상황(날짜, 기관명, 세부 사항 등)을 단계 설명에 반영하세요.
 - 사용자 메시지에 "실제 검색 결과"가 포함되어 있으면, actionUrl은 반드시 그 목록에 있는 URL 중에서만
@@ -226,7 +228,12 @@ export class PlanningAiService {
       const response = await this.client!.chat.completions.create({
         model: this.model,
         max_tokens: 2048,
-        temperature: 0.2,
+        // 0.2 was low enough that the model almost always picked the same
+        // step count (4) regardless of goal complexity — raised to 0.5 for
+        // real variety. JSON structure itself stays safe either way since
+        // response_format enforces it at the API level, and validatePlan()
+        // + the retry loop above already guard content quality.
+        temperature: 0.5,
         top_p: 0.7,
         response_format: { type: 'json_object' },
         messages: [

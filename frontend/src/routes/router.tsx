@@ -5,6 +5,7 @@ import HomePage from "@/pages/HomePage";
 import PlanningPage from "@/pages/PlanningPage";
 import StartPage from "@/pages/StartPage";
 import SavedPage from "@/pages/SavedPage";
+import SavedCategoryPage from "@/pages/SavedCategoryPage";
 import SavedPlanDetailPage from "@/pages/SavedPlanDetailPage";
 import AutomationPage from "@/pages/AutomationPage";
 import MetricsPage from "@/pages/MetricsPage";
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
           {
             path: "/saved",
             element: <SavedPage />,
+          },
+          {
+            path: "/saved/category/:goalType",
+            element: <SavedCategoryPage />,
           },
           {
             path: "/saved/:id",

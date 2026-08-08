@@ -173,6 +173,11 @@ export class SavedPlansService {
       totalSteps: plan.totalSteps,
       automationConnected: connected.length > 0,
       automationConnectedAt: connectedAt ? connectedAt.toISOString() : null,
+      // Korean display labels from the wizard profile captured at save time —
+      // shown on the "나의 플랜" mobile preview cards. null/[] for plans saved
+      // before profile capture existed (older rows, profile is nullable).
+      countries: plan.profile?.countries ?? [],
+      field: plan.profile?.field ?? null,
     };
   }
 

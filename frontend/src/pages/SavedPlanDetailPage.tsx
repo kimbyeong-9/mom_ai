@@ -1,5 +1,6 @@
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { getGoalTypeLabel } from "@/constants/goalTypes";
 import { useAutomations } from "@/features/automation/hooks/useAutomations";
@@ -18,9 +19,20 @@ export default function SavedPlanDetailPage() {
   const toggleStepCompletion = useToggleStepCompletion(id ?? "");
   const [togglingStepId, setTogglingStepId] = useState<string | null>(null);
 
+  const backLink = (
+    <Link
+      to="/saved"
+      className="inline-flex w-fit items-center gap-1.5 rounded-full border-[1.5px] border-[#1F3D2E]/10 bg-white py-2 pl-2.5 pr-3.5 text-sm font-bold text-[#1F3D2E] shadow-[0_2px_10px_rgba(31,61,46,0.08)] transition-colors hover:border-[#1F3D2E]/25 hover:bg-[#1F3D2E]/5"
+    >
+      <ArrowLeft size={16} strokeWidth={2.25} />
+      이전 화면
+    </Link>
+  );
+
   if (isLoading || !savedPlan) {
     return (
-      <div className="relative mx-auto max-w-2xl px-5 py-6 sm:px-11 sm:py-8">
+      <div className="relative mx-auto flex max-w-2xl flex-col gap-4 px-5 py-6 sm:gap-5 sm:px-11 sm:py-8">
+        {backLink}
         <PlanningLoading />
       </div>
     );
@@ -48,6 +60,8 @@ export default function SavedPlanDetailPage() {
 
   return (
     <div className="relative mx-auto flex max-w-2xl flex-col gap-4 px-5 py-6 sm:gap-5 sm:px-11 sm:py-8">
+      {backLink}
+
       <div>
         <p className="text-xs font-bold text-[#1F3D2E]/45">{getGoalTypeLabel(savedPlan.goalType)}</p>
         <h1 className="mt-1 text-xl font-extrabold text-[#1F3D2E] sm:text-2xl">{savedPlan.title}</h1>

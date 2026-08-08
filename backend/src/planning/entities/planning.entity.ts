@@ -25,6 +25,14 @@ export type PlanningStepData = {
 // The *Codes/*Value siblings hold the raw wizard option ids (ISO country
 // codes, English-ish kebab slugs) that buildEnglishJobQuery actually
 // searches with — see search-query.util.ts.
+//
+// timelineValue/visaStatusValue are wizard option ids too (e.g. "urgent",
+// "need-sponsor") — buildEnglishJobQuery maps the subset of them that have a
+// real, common English job-posting phrase (e.g. "urgently hiring", "visa
+// sponsorship") into extra search terms. languageValue is captured but
+// deliberately NOT searched on — there's no reliable English keyword real
+// job postings use to self-tag required language proficiency, so adding one
+// would just narrow/miss real results instead of improving relevance.
 export type SearchProfile = {
   countries: string[];
   field?: string;
@@ -34,6 +42,9 @@ export type SearchProfile = {
   fieldValue?: string;
   experienceValue?: string;
   workStyleValue?: string;
+  timelineValue?: string;
+  visaStatusValue?: string;
+  languageValue?: string;
 };
 
 @Entity('plannings')
